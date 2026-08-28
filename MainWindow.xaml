@@ -86,7 +86,23 @@
             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="16,0">
                 <TextBlock x:Name="StatusText" Text="checking for updates..." Foreground="#C3C6CD" FontSize="11" Margin="0,0,0,5"/>
                 <ProgressBar x:Name="UpdateProgress" Height="6" Minimum="0" Maximum="100" Value="0"
-                             Background="#1EFFFFFF" Foreground="#5DCAA5" BorderThickness="0"/>
+                             Background="#1EFFFFFF" Foreground="#C88FF7" BorderThickness="0">
+                    <ProgressBar.Effect>
+                        <DropShadowEffect x:Name="ProgressGlow" Color="#C88FF7" ShadowDepth="0" BlurRadius="6" Opacity="0.55"/>
+                    </ProgressBar.Effect>
+                    <ProgressBar.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                    <DoubleAnimation Storyboard.TargetName="ProgressGlow" Storyboard.TargetProperty="BlurRadius"
+                                                      From="4" To="16" Duration="0:0:1.1"/>
+                                    <DoubleAnimation Storyboard.TargetName="ProgressGlow" Storyboard.TargetProperty="Opacity"
+                                                      From="0.45" To="1.0" Duration="0:0:1.1"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </ProgressBar.Triggers>
+                </ProgressBar>
             </StackPanel>
 
             <Button x:Name="PlayButton" Grid.Column="1" Content="Play" Width="110" Height="38"
