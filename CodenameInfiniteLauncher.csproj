@@ -17,6 +17,7 @@
     <None Update="config.json" Condition="Exists('config.json')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Resource Include="Assets\background.png" />
   </ItemGroup>
 
 </Project>
