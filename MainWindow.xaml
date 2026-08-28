@@ -107,11 +107,36 @@
                     <ProgressBar.Triggers>
                         <EventTrigger RoutedEvent="Loaded">
                             <BeginStoryboard>
-                                <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                    <DoubleAnimation Storyboard.TargetName="ProgressGlow" Storyboard.TargetProperty="BlurRadius"
-                                                      From="4" To="16" Duration="0:0:1.1"/>
-                                    <DoubleAnimation Storyboard.TargetName="ProgressGlow" Storyboard.TargetProperty="Opacity"
-                                                      From="0.45" To="1.0" Duration="0:0:1.1"/>
+                                <Storyboard RepeatBehavior="Forever">
+                                    <!-- Irregular keyframes instead of a smooth back-and-forth pulse, so the
+                                         glow flickers like noise rather than breathing on a clean sine wave.
+                                         First/last values match so the Forever loop doesn't visibly snap. -->
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ProgressGlow" Storyboard.TargetProperty="BlurRadius">
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="6"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.12" Value="13"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.25" Value="8"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.35" Value="17"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.5" Value="7"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.65" Value="15"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.78" Value="9"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.95" Value="18"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:1.1" Value="6"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:1.3" Value="12"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:1.45" Value="6"/>
+                                    </DoubleAnimationUsingKeyFrames>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ProgressGlow" Storyboard.TargetProperty="Opacity">
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0.5"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.12" Value="0.8"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.25" Value="0.55"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.35" Value="1.0"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.5" Value="0.6"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.65" Value="0.95"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.78" Value="0.65"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.95" Value="1.0"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:1.1" Value="0.5"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:1.3" Value="0.75"/>
+                                        <LinearDoubleKeyFrame KeyTime="0:0:1.45" Value="0.5"/>
+                                    </DoubleAnimationUsingKeyFrames>
                                 </Storyboard>
                             </BeginStoryboard>
                         </EventTrigger>
