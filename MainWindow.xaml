@@ -1,0 +1,100 @@
+<Window x:Class="PoopCraftLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PoopCraft Launcher"
+        Width="900" Height="506"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Background="#1B1D22">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="34"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="64"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title bar -->
+        <Grid Grid.Row="0" Background="#000000" Opacity="0.001" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"/>
+        <Grid Grid.Row="0" Background="#59000000" IsHitTestVisible="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="PoopCraft v1.001" Foreground="#CFD2DA" FontSize="12"
+                       VerticalAlignment="Center" Margin="10,0,0,0"/>
+        </Grid>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0">
+            <Button x:Name="MinimizeButton" Content="&#xE921;" Width="28" Height="24" Click="MinimizeButton_Click"
+                    Background="Transparent" BorderThickness="0" Foreground="#9A9EA8" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
+            <Button x:Name="CloseButton" Content="&#xE8BB;" Width="28" Height="24" Click="CloseButton_Click"
+                    Background="Transparent" BorderThickness="0" Foreground="#9A9EA8" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
+        </StackPanel>
+
+        <!-- Content / background art -->
+        <Grid Grid.Row="1">
+            <Border Background="#26292F">
+                <TextBlock Text="background art" Foreground="#4B4F58" FontSize="13"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- Realm status pill -->
+            <Border Background="#8C0A0B0E" CornerRadius="10" Padding="8,3" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="16,10,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse x:Name="StatusDot" Width="7" Height="7" Fill="#888888" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="StatusPillText" Text="checking realm..." Foreground="#D6D9DF" FontSize="11" Margin="6,0,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Patch notes panel -->
+            <Border Background="#8C0A0B0E" CornerRadius="6" Width="240" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="16,50,0,16" Padding="12,10">
+                <StackPanel>
+                    <TextBlock Text="Patch notes" Foreground="#F2F3F5" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <ItemsControl x:Name="NewsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Foreground="#A8ACB5" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- First-run overlay: shown when no client is found at ClientPath -->
+            <Border x:Name="FirstRunOverlay" Background="#CC0A0B0E" Visibility="Collapsed">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="360">
+                    <TextBlock Text="No game client found" Foreground="#F2F3F5" FontSize="16" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <TextBlock x:Name="FirstRunDetailText" Text="Download the 1.12.1 client or point the launcher at an existing install."
+                               Foreground="#A8ACB5" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,20"/>
+                    <Button x:Name="DownloadClientButton" Content="Download client (torrent)" Height="38"
+                            Background="#5DCAA5" Foreground="#04342C" FontWeight="SemiBold" FontSize="13"
+                            BorderThickness="0" Margin="0,0,0,10" Click="DownloadClientButton_Click"/>
+                    <Button x:Name="LocateClientButton" Content="Locate existing install..." Height="34"
+                            Background="Transparent" Foreground="#D6D9DF" FontSize="12" BorderBrush="#4B4F58"
+                            BorderThickness="1" Click="LocateClientButton_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Bottom bar -->
+        <Grid Grid.Row="2" Background="#73000000">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="16,0">
+                <TextBlock x:Name="StatusText" Text="checking for updates..." Foreground="#C3C6CD" FontSize="11" Margin="0,0,0,5"/>
+                <ProgressBar x:Name="UpdateProgress" Height="6" Minimum="0" Maximum="100" Value="0"
+                             Background="#1EFFFFFF" Foreground="#5DCAA5" BorderThickness="0"/>
+            </StackPanel>
+
+            <Button x:Name="PlayButton" Grid.Column="1" Content="Play" Width="110" Height="38"
+                    Margin="0,0,16,0" VerticalAlignment="Center"
+                    Background="#5DCAA5" Foreground="#04342C" FontWeight="SemiBold" FontSize="14"
+                    BorderThickness="0" IsEnabled="False" Click="PlayButton_Click"/>
+        </Grid>
+    </Grid>
+</Window>
