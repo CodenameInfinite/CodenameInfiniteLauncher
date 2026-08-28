@@ -3,5 +3,6 @@
   "clientPath": "C:\\Games\\RetroWoW 1.12.1",
   "exeName": "WoW.exe",
   "realmAddress": "poopcraftpvt.duckdns.org",
-  "clientMagnetUri": ""
+  "clientMagnetUri": "",
+  "torrentDownloadPath": ""
 }

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -12,6 +13,8 @@ public partial class MainWindow : Window
 {
     private readonly LauncherConfig _config;
     private readonly UpdateService _updateService;
+    private readonly ClientWatchService _clientWatchService = new();
+    private CancellationTokenSource? _downloadWatchCts;
 
     public MainWindow(LauncherConfig config)
     {
@@ -66,12 +69,52 @@ public partial class MainWindow : Window
         try
         {
             Process.Start(new ProcessStartInfo(_config.ClientMagnetUri) { UseShellExecute = true });
-            FirstRunDetailText.Text = "Handed off to your torrent client. Once the download finishes, use \"Locate existing install\" to point the launcher at it.";
         }
         catch (Exception ex)
         {
             FirstRunDetailText.Text = $"Couldn't open the download link: {ex.Message}";
+            return;
         }
+
+        StartWatchingForClient();
+    }
+
+    /// <summary>
+    /// Polls the downloads folder for the exe to show up so the user doesn't have to come back
+    /// and click "Locate existing install" by hand once the torrent finishes. Cancelled if the
+    /// user locates it manually first, or if a new download watch is started.
+    /// </summary>
+    private void StartWatchingForClient()
+    {
+        _downloadWatchCts?.Cancel();
+        _downloadWatchCts = new CancellationTokenSource();
+        var token = _downloadWatchCts.Token;
+
+        var progress = new Progress<string>(status => FirstRunDetailText.Text = status);
+
+        _ = WatchForClientAsync(token, progress);
+    }
+
+    private async Task WatchForClientAsync(CancellationToken token, IProgress<string> progress)
+    {
+        string? foundDir;
+        try
+        {
+            foundDir = await _clientWatchService.WaitForClientAsync(_config, progress, token);
+        }
+        catch (Exception ex)
+        {
+            FirstRunDetailText.Text = $"Stopped watching for the client: {ex.Message}";
+            return;
+        }
+
+        if (foundDir == null || token.IsCancellationRequested) return;
+
+        _config.ClientPath = foundDir;
+        ConfigService.Save(_config);
+        FirstRunDetailText.Text = $"Found {_config.ExeName} — launching setup...";
+
+        await RunStartupFlowAsync();
     }
 
     private async void LocateClientButton_Click(object sender, RoutedEventArgs e)
@@ -84,6 +127,8 @@ public partial class MainWindow : Window
         };
 
         if (dialog.ShowDialog() != true) return;
+
+        _downloadWatchCts?.Cancel();
 
         var chosenDir = System.IO.Path.GetDirectoryName(dialog.FileName);
         if (string.IsNullOrEmpty(chosenDir)) return;

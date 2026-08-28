@@ -5,7 +5,9 @@ configured server, fetches a manifest from the dashboard (via [CodenameInfiniteL
 hash-diffs local patch MPQs against it, downloads what's changed, and launches `WoW.exe`.
 
 If no client is found at the configured path, it offers a torrent link (if configured)
-or lets you point it at an existing install.
+or lets you point it at an existing install. After opening the magnet link it also polls
+`torrentDownloadPath` (defaults to the user's Downloads folder) for the exe to appear, so
+most people never need the manual file picker at all.
 
 ## Setup
 
