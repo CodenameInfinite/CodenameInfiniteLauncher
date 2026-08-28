@@ -1770,13 +1770,29 @@
 
         <!-- Content / background art -->
         <Grid Grid.Row="1">
-            <!-- Realm status pill -->
-            <Border Background="#8C0A0B0E" CornerRadius="10" Padding="8,3" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="16,10,0,0">
-                <StackPanel Orientation="Horizontal">
-                    <Ellipse x:Name="StatusDot" Width="7" Height="7" Fill="#888888" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="StatusPillText" Text="checking realm..." Foreground="#D6D9DF" FontSize="11" Margin="6,0,0,0"/>
-                </StackPanel>
-            </Border>
+            <!-- Realm status pill + on-demand full base-file integrity check. Verify is a
+                 separate, deliberately manual action from the always-on patch check in the
+                 bottom bar — hashing several GB of base MPQs isn't something every launch
+                 should pay for. -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="16,10,0,0">
+                <Border Background="#8C0A0B0E" CornerRadius="10" Padding="8,3">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse x:Name="StatusDot" Width="7" Height="7" Fill="#888888" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="StatusPillText" Text="checking realm..." Foreground="#D6D9DF" FontSize="11" Margin="6,0,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Button x:Name="VerifyFilesButton" Content="Verify client files" Margin="6,0,0,0"
+                        Padding="8,3" Background="#8C0A0B0E" Foreground="#A8ACB5" FontSize="11"
+                        BorderThickness="0" Cursor="Hand" IsEnabled="False" Click="VerifyFilesButton_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
 
             <!-- Patch notes panel -->
             <Border Background="#8C0A0B0E" CornerRadius="6" Width="240" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="16,50,0,16" Padding="12,10">

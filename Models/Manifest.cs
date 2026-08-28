@@ -29,3 +29,19 @@ public class NewsEntry
     public string Title { get; set; } = "";
     public string Body { get; set; } = "";
 }
+
+/// <summary>Response shape of GET /Launcher/BaseManifest.</summary>
+public class BaseManifest
+{
+    public List<BaseFileEntry> Files { get; set; } = new();
+}
+
+/// <summary>A base client file (MPQ or the exe) — same shape as PatchEntry, kept as its own
+/// type since it's a separate on-demand endpoint, not part of the always-fetched Manifest.</summary>
+public class BaseFileEntry
+{
+    public string FileName { get; set; } = "";
+    public long SizeBytes { get; set; }
+    public string Sha256 { get; set; } = "";
+    public string Url { get; set; } = "";
+}

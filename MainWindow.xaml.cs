@@ -13,6 +13,7 @@ public partial class MainWindow : Window
 {
     private readonly LauncherConfig _config;
     private readonly UpdateService _updateService;
+    private readonly ClientVerifyService _clientVerifyService;
     private readonly ClientWatchService _clientWatchService = new();
     private CancellationTokenSource? _downloadWatchCts;
 
@@ -21,6 +22,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         _config = config;
         _updateService = new UpdateService(config);
+        _clientVerifyService = new ClientVerifyService(config);
 
         Loaded += MainWindow_Loaded;
     }
@@ -205,11 +207,76 @@ public partial class MainWindow : Window
     /// <summary>
     /// Flips the Play button and fades the background accent layer (shimmer/glow hotspots/
     /// twinkles) in or out together, so the art only "comes alive" once launch is actually ready.
+    /// Also gates "Verify client files" — it shouldn't run while the quick patch check/download
+    /// or another verify pass is already in flight.
     /// </summary>
     private void SetReadyToLaunch(bool ready)
     {
         PlayButton.IsEnabled = ready;
+        VerifyFilesButton.IsEnabled = ready;
         BackgroundAccents.BeginAnimation(OpacityProperty, new DoubleAnimation(ready ? 1.0 : 0.0, TimeSpan.FromSeconds(ready ? 1.2 : 0.5)));
+    }
+
+    /// <summary>
+    /// On-demand full base-client integrity check: hashes every base MPQ plus the exe against
+    /// the dashboard's reference copy and repairs anything that doesn't match. Deliberately not
+    /// run automatically on every launch — see ClientVerifyService's class doc for why.
+    /// </summary>
+    private async void VerifyFilesButton_Click(object sender, RoutedEventArgs e)
+    {
+        SetReadyToLaunch(false);
+        StatusText.Text = "fetching base file manifest...";
+        UpdateProgress.Value = 0;
+
+        BaseManifest manifest;
+        try
+        {
+            manifest = await _clientVerifyService.FetchBaseManifestAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"couldn't verify: {ex.Message}";
+            SetReadyToLaunch(true);
+            return;
+        }
+
+        var progress = new Progress<(int percent, string status)>(p =>
+        {
+            UpdateProgress.Value = p.percent;
+            StatusText.Text = p.status;
+        });
+
+        List<BaseFileEntry> outdated;
+        try
+        {
+            outdated = await _clientVerifyService.GetOutdatedBaseFilesAsync(manifest, progress);
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"verification failed: {ex.Message}";
+            SetReadyToLaunch(true);
+            return;
+        }
+
+        if (outdated.Count == 0)
+        {
+            StatusText.Text = "all base files verified";
+            UpdateProgress.Value = 100;
+            SetReadyToLaunch(true);
+            return;
+        }
+
+        try
+        {
+            await _clientVerifyService.DownloadBaseFilesAsync(outdated, progress);
+            StatusText.Text = $"repaired {outdated.Count} base file(s)";
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"repair failed: {ex.Message}";
+        }
+
+        SetReadyToLaunch(true);
     }
 
     private void PlayButton_Click(object sender, RoutedEventArgs e)
