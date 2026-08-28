@@ -18,6 +18,587 @@
         <!-- Background art, full-bleed behind the translucent title/bottom bars -->
         <Image Grid.Row="0" Grid.RowSpan="3" Source="Assets/background.png" Stretch="UniformToFill" IsHitTestVisible="False"/>
 
+        <!-- Accent layer: glow hotspots over existing bright art features, a shimmer sweep, and
+             twinkling ambient particles. Starts invisible (Opacity=0) — code-behind fades this in
+             once PlayButton.IsEnabled flips true (SetReadyToLaunch), so the art only "comes alive"
+             once the game is actually ready to launch. Coordinates are in window space (0-900,
+             0-600) since the background Image exactly fills the window at this aspect ratio. -->
+        <Canvas x:Name="BackgroundAccents" Opacity="0" IsHitTestVisible="False">
+
+            <!-- Glow hotspot: galaxy swirl, center-top -->
+            <Ellipse Canvas.Left="405" Canvas.Top="65" Width="110" Height="110">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#A6F0E0FF" Offset="0"/>
+                        <GradientStop Color="#00C88FF7" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0.4"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:2.2" Value="0.9"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:4.4" Value="0.4"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+
+            <!-- Glow hotspot: green gate, right side -->
+            <Ellipse Canvas.Left="715" Canvas.Top="165" Width="90" Height="90">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#9C9CFFB0" Offset="0"/>
+                        <GradientStop Color="#009CFFB0" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.8" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0.35"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:1.9" Value="0.85"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:3.8" Value="0.35"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+
+            <!-- Glow hotspot: purple orb, lower right -->
+            <Ellipse Canvas.Left="695" Canvas.Top="375" Width="100" Height="100">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#9CC88FF7" Offset="0"/>
+                        <GradientStop Color="#00C88FF7" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:1.6" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0.4"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:2.5" Value="0.9"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:5.0" Value="0.4"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+
+            <!-- Glow hotspot: blue emblem, upper left -->
+            <Ellipse Canvas.Left="280" Canvas.Top="470" Width="75" Height="75">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#9C7EC8FF" Offset="0"/>
+                        <GradientStop Color="#007EC8FF" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:2.4" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0.35"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:2.1" Value="0.8"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:4.2" Value="0.35"><EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction></EasingDoubleKeyFrame>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+
+            <!-- Shimmer sweep: a soft diagonal light band that passes across the whole window,
+                 then pauses off-screen before repeating. -->
+            <Rectangle Canvas.Left="-250" Canvas.Top="-150" Width="130" Height="900" RenderTransformOrigin="0.5,0.5">
+                <Rectangle.RenderTransform>
+                    <RotateTransform Angle="18"/>
+                </Rectangle.RenderTransform>
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#00FFFFFF" Offset="0"/>
+                        <GradientStop Color="#50FFFFFF" Offset="0.5"/>
+                        <GradientStop Color="#00FFFFFF" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+                <Rectangle.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(Canvas.Left)">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="-250"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.5" Value="-250"/>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:5.5" Value="1050">
+                                        <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                    </EasingDoubleKeyFrame>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:8.0" Value="1050"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Rectangle.Triggers>
+            </Rectangle>
+
+            <!-- Ambient twinkle particles scattered across the art -->
+            <Ellipse Canvas.Left="300" Canvas.Top="150" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.0" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.0" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.4" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="330" Canvas.Top="320" Width="3" Height="3" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.5" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.1" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.2" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.8" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="580" Canvas.Top="90" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:1.0" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.9" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.8" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.2" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="850" Canvas.Top="280" Width="3" Height="3" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:1.5" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.2" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.4" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:4.0" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="450" Canvas.Top="480" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:2.0" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.0" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.6" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="290" Canvas.Top="530" Width="3" Height="3" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:2.5" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.1" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.2" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.8" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="650" Canvas.Top="520" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:3.0" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.9" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.8" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.2" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="800" Canvas.Top="480" Width="3" Height="3" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:3.5" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.2" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.4" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:4.0" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="500" Canvas.Top="60" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.2" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.0" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.5" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="620" Canvas.Top="320" Width="3" Height="3" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.7" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.1" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.2" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.9" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="400" Canvas.Top="250" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:1.2" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.9" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.8" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.3" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="870" Canvas.Top="150" Width="3" Height="3" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:1.7" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.2" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.4" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:4.1" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="520" Canvas.Top="550" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:2.2" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.0" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.6" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="760" Canvas.Top="90" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:2.7" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.9" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.8" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.2" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="760" Canvas.Top="460" Width="3" Height="3" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:3.2" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.1" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.2" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.8" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="350" Canvas.Top="420" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:3.7" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.0" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.5" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="600" Canvas.Top="180" Width="3" Height="3" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.4" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.2" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.4" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:4.0" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="830" Canvas.Top="350" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:1.5" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.9" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.8" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.2" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="450" Canvas.Top="350" Width="3" Height="3" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.3" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.0" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.4" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="680" Canvas.Top="200" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.9" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.1" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.2" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.8" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="550" Canvas.Top="420" Width="4" Height="4" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:1.4" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.9" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.8" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.1" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="380" Canvas.Top="180" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:1.9" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.2" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.4" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:4.1" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="750" Canvas.Top="380" Width="3" Height="3" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:2.4" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.0" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.5" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="320" Canvas.Top="480" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.1" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.1" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.2" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.9" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="870" Canvas.Top="450" Width="3" Height="3" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:2.9" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.9" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.8" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.2" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="600" Canvas.Top="530" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:3.4" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.2" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.4" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:4.1" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="720" Canvas.Top="150" Width="4" Height="4" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.6" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.0" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.6" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+            <Ellipse Canvas.Left="420" Canvas.Top="530" Width="2" Height="2" Fill="#E6F0FF" Opacity="0">
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:2.1" RepeatBehavior="Forever">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:1.1" Value="1.0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:2.2" Value="0"/>
+                                    <LinearDoubleKeyFrame KeyTime="0:0:3.8" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+        </Canvas>
+
         <!-- Title bar -->
         <Grid Grid.Row="0" Background="#000000" Opacity="0.001" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"/>
         <Grid Grid.Row="0" Background="#59000000" IsHitTestVisible="False">

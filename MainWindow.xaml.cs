@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using CodenameInfiniteLauncher.Models;
 using CodenameInfiniteLauncher.Services;
 
@@ -31,7 +32,7 @@ public partial class MainWindow : Window
         if (!ClientIsInstalled())
         {
             FirstRunOverlay.Visibility = Visibility.Visible;
-            PlayButton.IsEnabled = false;
+            SetReadyToLaunch(false);
             StatusText.Text = "waiting for client";
             return;
         }
@@ -97,7 +98,7 @@ public partial class MainWindow : Window
     {
         StatusText.Text = "checking for updates...";
         UpdateProgress.Value = 0;
-        PlayButton.IsEnabled = false;
+        SetReadyToLaunch(false);
 
         Manifest manifest;
         try
@@ -111,7 +112,7 @@ public partial class MainWindow : Window
             StatusDot.Fill = new SolidColorBrush(Color.FromRgb(0xE2, 0x4B, 0x4A));
             // Allow playing anyway — the server might just be unreachable for the launcher,
             // not the game client (e.g. dashboard down but mangosd/realmd still up).
-            PlayButton.IsEnabled = true;
+            SetReadyToLaunch(true);
             return;
         }
 
@@ -132,7 +133,7 @@ public partial class MainWindow : Window
         {
             StatusText.Text = "up to date";
             UpdateProgress.Value = 100;
-            PlayButton.IsEnabled = true;
+            SetReadyToLaunch(true);
             return;
         }
 
@@ -152,7 +153,17 @@ public partial class MainWindow : Window
             StatusText.Text = $"update failed: {ex.Message}";
         }
 
-        PlayButton.IsEnabled = true;
+        SetReadyToLaunch(true);
+    }
+
+    /// <summary>
+    /// Flips the Play button and fades the background accent layer (shimmer/glow hotspots/
+    /// twinkles) in or out together, so the art only "comes alive" once launch is actually ready.
+    /// </summary>
+    private void SetReadyToLaunch(bool ready)
+    {
+        PlayButton.IsEnabled = ready;
+        BackgroundAccents.BeginAnimation(OpacityProperty, new DoubleAnimation(ready ? 1.0 : 0.0, TimeSpan.FromSeconds(ready ? 1.2 : 0.5)));
     }
 
     private void PlayButton_Click(object sender, RoutedEventArgs e)
