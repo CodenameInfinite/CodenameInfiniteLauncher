@@ -1799,7 +1799,7 @@
                                HorizontalAlignment="Center" Margin="0,0,0,6"/>
                     <TextBlock x:Name="FirstRunDetailText" Text="Download the 1.12.1 client or point the launcher at an existing install."
                                Foreground="#A8ACB5" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,20"/>
-                    <Button x:Name="DownloadClientButton" Content="Download client (torrent)" Height="38"
+                    <Button x:Name="DownloadClientButton" Content="Download client" Height="38"
                             Background="#5DCAA5" Foreground="#04342C" FontWeight="SemiBold" FontSize="13"
                             BorderThickness="0" Margin="0,0,0,10" Click="DownloadClientButton_Click"/>
                     <Button x:Name="LocateClientButton" Content="Locate existing install..." Height="34"

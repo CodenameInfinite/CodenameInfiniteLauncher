@@ -6,7 +6,12 @@ public class LauncherConfig
     public string ClientPath { get; set; } = "";
     public string ExeName { get; set; } = "WoW.exe";
     public string RealmAddress { get; set; } = "127.0.0.1";
-    public string ClientMagnetUri { get; set; } = "";
+    /// <summary>
+    /// Opened via the OS default handler when "Download client" is clicked — a magnet URI,
+    /// a direct download link, or a share link (Drive, Dropbox, etc.). Whatever it is, the
+    /// launcher just hands it to the shell; it doesn't fetch or verify the content itself.
+    /// </summary>
+    public string ClientDownloadUri { get; set; } = "";
 
     /// <summary>
     /// Folder to watch for ExeName appearing after the user's torrent client finishes.

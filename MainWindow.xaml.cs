@@ -60,15 +60,15 @@ public partial class MainWindow : Window
 
     private void DownloadClientButton_Click(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(_config.ClientMagnetUri))
+        if (string.IsNullOrWhiteSpace(_config.ClientDownloadUri))
         {
-            FirstRunDetailText.Text = "No client link configured yet — set clientMagnetUri in config.json, or use \"Locate existing install\" if you already have the client somewhere.";
+            FirstRunDetailText.Text = "No client link configured yet — set clientDownloadUri in config.json, or use \"Locate existing install\" if you already have the client somewhere.";
             return;
         }
 
         try
         {
-            Process.Start(new ProcessStartInfo(_config.ClientMagnetUri) { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo(_config.ClientDownloadUri) { UseShellExecute = true });
         }
         catch (Exception ex)
         {
@@ -76,6 +76,7 @@ public partial class MainWindow : Window
             return;
         }
 
+        FirstRunDetailText.Text = "If the download is an archive (.rar/.zip), extract it once it finishes — the launcher will pick it up automatically as soon as it sees the exe.";
         StartWatchingForClient();
     }
 
