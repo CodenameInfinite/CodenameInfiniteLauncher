@@ -18,6 +18,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Resource Include="Assets\background.png" />
+    <Resource Include="Assets\play-crystal.png" />
   </ItemGroup>
 
 </Project>

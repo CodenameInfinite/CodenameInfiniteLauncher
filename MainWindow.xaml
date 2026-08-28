@@ -91,15 +91,15 @@
                     <ProgressBar.Effect>
                         <DropShadowEffect x:Name="ProgressGlow" Color="#C88FF7" ShadowDepth="0" BlurRadius="6" Opacity="0.55"/>
                     </ProgressBar.Effect>
-                    <!-- Pointed hex-bar clip: StackPanel is 742px wide (900 window - 126 Play-button
+                    <!-- Pointed hex-bar clip: StackPanel is 752px wide (900 window - 116 Play-button
                          column - 32 StackPanel margin), so the tips land exactly on the bar's own edges. -->
                     <ProgressBar.Clip>
                         <PathGeometry>
                             <PathFigure StartPoint="0,1.5" IsClosed="True">
                                 <LineSegment Point="8,0"/>
-                                <LineSegment Point="734,0"/>
-                                <LineSegment Point="742,1.5"/>
-                                <LineSegment Point="734,3"/>
+                                <LineSegment Point="744,0"/>
+                                <LineSegment Point="752,1.5"/>
+                                <LineSegment Point="744,3"/>
                                 <LineSegment Point="8,3"/>
                             </PathFigure>
                         </PathGeometry>
@@ -108,34 +108,31 @@
                         <EventTrigger RoutedEvent="Loaded">
                             <BeginStoryboard>
                                 <Storyboard RepeatBehavior="Forever">
-                                    <!-- Irregular keyframes instead of a smooth back-and-forth pulse, so the
-                                         glow flickers like noise rather than breathing on a clean sine wave.
-                                         First/last values match so the Forever loop doesn't visibly snap. -->
+                                    <!-- Slow sine-eased pulse (~3s/cycle) instead of rapid linear jumps —
+                                         reads as breathing rather than flashing. Slight asymmetry (the mid
+                                         dip doesn't return all the way to the start value) keeps a touch of
+                                         the organic feel without the fast flicker. -->
                                     <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ProgressGlow" Storyboard.TargetProperty="BlurRadius">
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="6"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.12" Value="13"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.25" Value="8"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.35" Value="17"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.5" Value="7"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.65" Value="15"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.78" Value="9"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.95" Value="18"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:1.1" Value="6"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:1.3" Value="12"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:1.45" Value="6"/>
+                                        <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="6">
+                                            <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                        </EasingDoubleKeyFrame>
+                                        <EasingDoubleKeyFrame KeyTime="0:0:1.5" Value="20">
+                                            <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                        </EasingDoubleKeyFrame>
+                                        <EasingDoubleKeyFrame KeyTime="0:0:3.0" Value="6">
+                                            <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                        </EasingDoubleKeyFrame>
                                     </DoubleAnimationUsingKeyFrames>
                                     <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ProgressGlow" Storyboard.TargetProperty="Opacity">
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0.5"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.12" Value="0.8"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.25" Value="0.55"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.35" Value="1.0"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.5" Value="0.6"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.65" Value="0.95"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.78" Value="0.65"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:0.95" Value="1.0"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:1.1" Value="0.5"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:1.3" Value="0.75"/>
-                                        <LinearDoubleKeyFrame KeyTime="0:0:1.45" Value="0.5"/>
+                                        <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0.5">
+                                            <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                        </EasingDoubleKeyFrame>
+                                        <EasingDoubleKeyFrame KeyTime="0:0:1.5" Value="1.0">
+                                            <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                        </EasingDoubleKeyFrame>
+                                        <EasingDoubleKeyFrame KeyTime="0:0:3.0" Value="0.5">
+                                            <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                        </EasingDoubleKeyFrame>
                                     </DoubleAnimationUsingKeyFrames>
                                 </Storyboard>
                             </BeginStoryboard>
@@ -449,68 +446,51 @@
                 </Grid>
             </StackPanel>
 
-            <!-- Purple crystal Play button: dim/inert facet fill while updates are in progress,
-                 swaps to a bright gradient with a noisy pulsing glow (same flicker language as
-                 the progress bar) once IsEnabled flips true, meaning it's actually ready to launch. -->
-            <Button x:Name="PlayButton" Grid.Column="1" Width="110" Height="38"
+            <!-- Purple crystal Play button, using the uploaded artwork (transparent PNG). Dim/flat
+                 while updates are in progress, swaps to full brightness with a noisy pulsing glow
+                 (same flicker language as the progress bar) once IsEnabled flips true. -->
+            <Button x:Name="PlayButton" Grid.Column="1" Width="100" Height="60"
                     Margin="0,0,16,0" VerticalAlignment="Center"
                     IsEnabled="False" Click="PlayButton_Click">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Grid>
-                            <Polygon x:Name="Crystal" Points="15,0 95,0 110,19 95,38 15,38 0,19"
-                                     Stroke="#2B1B42" StrokeThickness="1">
-                                <Polygon.Fill>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#443C52" Offset="0"/>
-                                        <GradientStop Color="#332C40" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Polygon.Fill>
-                                <Polygon.Effect>
+                            <Image x:Name="CrystalImage" Source="Assets/play-crystal.png" Stretch="Uniform" Opacity="0.4">
+                                <Image.Effect>
                                     <DropShadowEffect x:Name="PlayGlow" Color="#C88FF7" ShadowDepth="0" BlurRadius="0" Opacity="0"/>
-                                </Polygon.Effect>
-                            </Polygon>
-                            <Line X1="15" Y1="0" X2="30" Y2="38" Stroke="White" StrokeThickness="0.6" Opacity="0.25"/>
-                            <Line X1="95" Y1="0" X2="80" Y2="38" Stroke="White" StrokeThickness="0.6" Opacity="0.25"/>
-                            <TextBlock x:Name="PlayText" Text="Play" FontWeight="SemiBold" FontSize="14"
-                                       Foreground="#8B84A0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Image.Effect>
+                            </Image>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsEnabled" Value="True">
-                                <Setter TargetName="Crystal" Property="Fill">
-                                    <Setter.Value>
-                                        <RadialGradientBrush GradientOrigin="0.3,0.3" Center="0.5,0.5" RadiusX="0.9" RadiusY="0.9">
-                                            <GradientStop Color="#F0E0FF" Offset="0"/>
-                                            <GradientStop Color="#C88FF7" Offset="0.55"/>
-                                            <GradientStop Color="#7A4FBF" Offset="1"/>
-                                        </RadialGradientBrush>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter TargetName="PlayText" Property="Foreground" Value="#2B1B42"/>
+                                <Setter TargetName="CrystalImage" Property="Opacity" Value="1.0"/>
                                 <Trigger.EnterActions>
                                     <BeginStoryboard x:Name="PlayGlowStoryboard">
                                         <Storyboard RepeatBehavior="Forever">
+                                            <!-- Slow sine-eased pulse (~2.6s/cycle), same breathing language as the
+                                                 progress bar's glow but a slightly different period so the two
+                                                 don't lock into a synchronized flash. -->
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PlayGlow" Storyboard.TargetProperty="BlurRadius">
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="8"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.15" Value="18"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.3" Value="10"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.5" Value="22"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.68" Value="11"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.85" Value="20"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:1.05" Value="9"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:1.25" Value="16"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:1.45" Value="8"/>
+                                                <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="8">
+                                                    <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                                </EasingDoubleKeyFrame>
+                                                <EasingDoubleKeyFrame KeyTime="0:0:1.3" Value="24">
+                                                    <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                                </EasingDoubleKeyFrame>
+                                                <EasingDoubleKeyFrame KeyTime="0:0:2.6" Value="8">
+                                                    <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                                </EasingDoubleKeyFrame>
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PlayGlow" Storyboard.TargetProperty="Opacity">
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0.55"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.15" Value="0.85"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.3" Value="0.6"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.5" Value="1.0"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.68" Value="0.65"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.85" Value="0.95"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:1.05" Value="0.6"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:1.25" Value="0.8"/>
-                                                <LinearDoubleKeyFrame KeyTime="0:0:1.45" Value="0.55"/>
+                                                <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0.55">
+                                                    <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                                </EasingDoubleKeyFrame>
+                                                <EasingDoubleKeyFrame KeyTime="0:0:1.3" Value="1.0">
+                                                    <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                                </EasingDoubleKeyFrame>
+                                                <EasingDoubleKeyFrame KeyTime="0:0:2.6" Value="0.55">
+                                                    <EasingDoubleKeyFrame.EasingFunction><SineEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+                                                </EasingDoubleKeyFrame>
                                             </DoubleAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </BeginStoryboard>
