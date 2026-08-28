@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon />
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <AssemblyName>CodenameInfiniteLauncher</AssemblyName>
   </PropertyGroup>
 
@@ -19,6 +19,7 @@
     </None>
     <Resource Include="Assets\background.png" />
     <Resource Include="Assets\play-crystal.png" />
+    <Resource Include="Assets\app.ico" />
   </ItemGroup>
 
 </Project>

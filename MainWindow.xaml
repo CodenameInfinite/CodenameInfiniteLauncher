@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="CodenameInfinite Launcher"
+        Icon="Assets/app.ico"
         Width="900" Height="600"
         WindowStyle="None"
         ResizeMode="NoResize"
