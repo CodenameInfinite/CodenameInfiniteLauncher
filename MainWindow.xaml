@@ -85,11 +85,24 @@
 
             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="16,0">
                 <TextBlock x:Name="StatusText" Text="checking for updates..." Foreground="#C3C6CD" FontSize="11" Margin="0,0,0,5"/>
-                <ProgressBar x:Name="UpdateProgress" Height="6" Minimum="0" Maximum="100" Value="0"
+                <ProgressBar x:Name="UpdateProgress" Height="3" Minimum="0" Maximum="100" Value="0"
                              Background="#1EFFFFFF" Foreground="#C88FF7" BorderThickness="0">
                     <ProgressBar.Effect>
                         <DropShadowEffect x:Name="ProgressGlow" Color="#C88FF7" ShadowDepth="0" BlurRadius="6" Opacity="0.55"/>
                     </ProgressBar.Effect>
+                    <!-- Pointed hex-bar clip: StackPanel is 742px wide (900 window - 126 Play-button
+                         column - 32 StackPanel margin), so the tips land exactly on the bar's own edges. -->
+                    <ProgressBar.Clip>
+                        <PathGeometry>
+                            <PathFigure StartPoint="0,1.5" IsClosed="True">
+                                <LineSegment Point="8,0"/>
+                                <LineSegment Point="734,0"/>
+                                <LineSegment Point="742,1.5"/>
+                                <LineSegment Point="734,3"/>
+                                <LineSegment Point="8,3"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </ProgressBar.Clip>
                     <ProgressBar.Triggers>
                         <EventTrigger RoutedEvent="Loaded">
                             <BeginStoryboard>
