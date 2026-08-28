@@ -449,10 +449,80 @@
                 </Grid>
             </StackPanel>
 
-            <Button x:Name="PlayButton" Grid.Column="1" Content="Play" Width="110" Height="38"
+            <!-- Purple crystal Play button: dim/inert facet fill while updates are in progress,
+                 swaps to a bright gradient with a noisy pulsing glow (same flicker language as
+                 the progress bar) once IsEnabled flips true, meaning it's actually ready to launch. -->
+            <Button x:Name="PlayButton" Grid.Column="1" Width="110" Height="38"
                     Margin="0,0,16,0" VerticalAlignment="Center"
-                    Background="#5DCAA5" Foreground="#04342C" FontWeight="SemiBold" FontSize="14"
-                    BorderThickness="0" IsEnabled="False" Click="PlayButton_Click"/>
+                    IsEnabled="False" Click="PlayButton_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Polygon x:Name="Crystal" Points="15,0 95,0 110,19 95,38 15,38 0,19"
+                                     Stroke="#2B1B42" StrokeThickness="1">
+                                <Polygon.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#443C52" Offset="0"/>
+                                        <GradientStop Color="#332C40" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Polygon.Fill>
+                                <Polygon.Effect>
+                                    <DropShadowEffect x:Name="PlayGlow" Color="#C88FF7" ShadowDepth="0" BlurRadius="0" Opacity="0"/>
+                                </Polygon.Effect>
+                            </Polygon>
+                            <Line X1="15" Y1="0" X2="30" Y2="38" Stroke="White" StrokeThickness="0.6" Opacity="0.25"/>
+                            <Line X1="95" Y1="0" X2="80" Y2="38" Stroke="White" StrokeThickness="0.6" Opacity="0.25"/>
+                            <TextBlock x:Name="PlayText" Text="Play" FontWeight="SemiBold" FontSize="14"
+                                       Foreground="#8B84A0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="True">
+                                <Setter TargetName="Crystal" Property="Fill">
+                                    <Setter.Value>
+                                        <RadialGradientBrush GradientOrigin="0.3,0.3" Center="0.5,0.5" RadiusX="0.9" RadiusY="0.9">
+                                            <GradientStop Color="#F0E0FF" Offset="0"/>
+                                            <GradientStop Color="#C88FF7" Offset="0.55"/>
+                                            <GradientStop Color="#7A4FBF" Offset="1"/>
+                                        </RadialGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="PlayText" Property="Foreground" Value="#2B1B42"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard x:Name="PlayGlowStoryboard">
+                                        <Storyboard RepeatBehavior="Forever">
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PlayGlow" Storyboard.TargetProperty="BlurRadius">
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="8"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.15" Value="18"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.3" Value="10"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.5" Value="22"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.68" Value="11"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.85" Value="20"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:1.05" Value="9"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:1.25" Value="16"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:1.45" Value="8"/>
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PlayGlow" Storyboard.TargetProperty="Opacity">
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="0.55"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.15" Value="0.85"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.3" Value="0.6"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.5" Value="1.0"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.68" Value="0.65"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.85" Value="0.95"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:1.05" Value="0.6"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:1.25" Value="0.8"/>
+                                                <LinearDoubleKeyFrame KeyTime="0:0:1.45" Value="0.55"/>
+                                            </DoubleAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <StopStoryboard BeginStoryboardName="PlayGlowStoryboard"/>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
         </Grid>
     </Grid>
 </Window>
