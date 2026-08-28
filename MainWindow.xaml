@@ -1,7 +1,7 @@
-<Window x:Class="PoopCraftLauncher.MainWindow"
+<Window x:Class="CodenameInfiniteLauncher.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="PoopCraft Launcher"
+        Title="CodenameInfinite Launcher"
         Width="900" Height="506"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -22,7 +22,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="PoopCraft v1.001" Foreground="#CFD2DA" FontSize="12"
+            <TextBlock Grid.Column="0" Text="CodenameInfinite v1.001" Foreground="#CFD2DA" FontSize="12"
                        VerticalAlignment="Center" Margin="10,0,0,0"/>
         </Grid>
         <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0">

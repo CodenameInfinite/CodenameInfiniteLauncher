@@ -2,9 +2,9 @@ using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
-using PoopCraftLauncher.Models;
+using CodenameInfiniteLauncher.Models;
 
-namespace PoopCraftLauncher.Services;
+namespace CodenameInfiniteLauncher.Services;
 
 public class UpdateService
 {

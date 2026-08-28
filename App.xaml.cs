@@ -1,7 +1,7 @@
 using System.Windows;
-using PoopCraftLauncher.Services;
+using CodenameInfiniteLauncher.Services;
 
-namespace PoopCraftLauncher;
+namespace CodenameInfiniteLauncher;
 
 public partial class App : Application
 {

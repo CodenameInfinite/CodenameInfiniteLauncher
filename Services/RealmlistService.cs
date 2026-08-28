@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace PoopCraftLauncher.Services;
+namespace CodenameInfiniteLauncher.Services;
 
 /// <summary>
 /// Keeps realmlist.wtf pointed at the configured server. Vanilla clients read this

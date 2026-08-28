@@ -1,8 +1,8 @@
 using System.IO;
 using System.Text.Json;
-using PoopCraftLauncher.Models;
+using CodenameInfiniteLauncher.Models;
 
-namespace PoopCraftLauncher.Services;
+namespace CodenameInfiniteLauncher.Services;
 
 public static class ConfigService
 {

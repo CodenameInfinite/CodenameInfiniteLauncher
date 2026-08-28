@@ -1,7 +1,7 @@
-# PoopCraft Launcher
+# CodenameInfinite Launcher
 
-WPF launcher for the PoopCraft VMaNGOS 1.12.1 server. Points `realmlist.wtf` at the
-configured server, fetches a manifest from the dashboard (via [PoopCraftLauncherProxy](https://github.com/CodenameInfinite/PoopCraftLauncherProxy)),
+WPF launcher for the CodenameInfinite VMaNGOS 1.12.1 server. Points `realmlist.wtf` at the
+configured server, fetches a manifest from the dashboard (via [CodenameInfiniteLauncherProxy](https://github.com/CodenameInfinite/CodenameInfiniteLauncherProxy)),
 hash-diffs local patch MPQs against it, downloads what's changed, and launches `WoW.exe`.
 
 If no client is found at the configured path, it offers a torrent link (if configured)

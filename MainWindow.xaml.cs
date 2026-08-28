@@ -2,10 +2,10 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using PoopCraftLauncher.Models;
-using PoopCraftLauncher.Services;
+using CodenameInfiniteLauncher.Models;
+using CodenameInfiniteLauncher.Services;
 
-namespace PoopCraftLauncher;
+namespace CodenameInfiniteLauncher;
 
 public partial class MainWindow : Window
 {

@@ -1,4 +1,4 @@
-namespace PoopCraftLauncher.Models;
+namespace CodenameInfiniteLauncher.Models;
 
 public class Manifest
 {
