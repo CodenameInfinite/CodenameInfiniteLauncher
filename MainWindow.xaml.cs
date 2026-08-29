@@ -14,6 +14,7 @@ public partial class MainWindow : Window
     private readonly LauncherConfig _config;
     private readonly UpdateService _updateService;
     private readonly ClientVerifyService _clientVerifyService;
+    private readonly SelfUpdateService _selfUpdateService = new();
     private readonly ClientWatchService _clientWatchService = new();
     private CancellationTokenSource? _downloadWatchCts;
 
@@ -29,7 +30,40 @@ public partial class MainWindow : Window
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        // Self-update runs before anything else. On success it shuts this instance down and
+        // relaunches the new one, so RunStartupFlowAsync never gets a chance to matter here.
+        if (await CheckAndApplySelfUpdateAsync()) return;
+
         await RunStartupFlowAsync();
+    }
+
+    /// <summary>Returns true if an update was applied (the app is shutting down to relaunch).
+    /// A failed check or a failed apply both fall through to false — self-update problems
+    /// should never block someone from just playing on the version they already have.</summary>
+    private async Task<bool> CheckAndApplySelfUpdateAsync()
+    {
+        StatusText.Text = "checking for launcher updates...";
+
+        var update = await _selfUpdateService.CheckForUpdateAsync();
+        if (update == null) return false;
+
+        var progress = new Progress<(int percent, string status)>(p =>
+        {
+            UpdateProgress.Value = p.percent;
+            StatusText.Text = p.status;
+        });
+
+        try
+        {
+            await _selfUpdateService.DownloadAndApplyUpdateAsync(update, progress);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"launcher update failed ({ex.Message}), continuing with this version";
+            UpdateProgress.Value = 0;
+            return false;
+        }
     }
 
     private async Task RunStartupFlowAsync()
