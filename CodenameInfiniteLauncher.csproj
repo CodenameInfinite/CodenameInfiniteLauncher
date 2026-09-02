@@ -23,6 +23,7 @@
     <Resource Include="Assets\background.png" />
     <Resource Include="Assets\play-crystal.png" />
     <Resource Include="Assets\app.ico" />
+    <Resource Include="Assets\scrollbar-icon.png" />
   </ItemGroup>
 
 </Project>

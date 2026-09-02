@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
@@ -24,6 +25,14 @@ public partial class MainWindow : Window
         _config = config;
         _updateService = new UpdateService(config);
         _clientVerifyService = new ClientVerifyService(config);
+
+        // Same version SelfUpdateService compares against GitHub releases (assembly version,
+        // driven by <Version> in the csproj) - trimmed to Major.Minor.Build so it reads "v1.0.3"
+        // rather than "v1.0.3.0", matching the vX.Y.Z release-tag convention.
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        VersionText.Text = version != null
+            ? $"CodenameInfinite v{version.Major}.{version.Minor}.{version.Build}"
+            : "CodenameInfinite";
 
         Loaded += MainWindow_Loaded;
     }

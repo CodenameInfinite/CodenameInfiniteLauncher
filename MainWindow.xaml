@@ -1759,7 +1759,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="CodenameInfinite v1.001" Foreground="#CFD2DA" FontSize="12"
+            <TextBlock x:Name="VersionText" Grid.Column="0" Text="CodenameInfinite" Foreground="#CFD2DA" FontSize="12"
                        VerticalAlignment="Center" Margin="10,0,0,0"/>
         </Grid>
         <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0">
@@ -1795,11 +1795,132 @@
                 </Button>
             </StackPanel>
 
-            <!-- Patch notes panel -->
-            <Border Background="#8C0A0B0E" CornerRadius="6" Width="240" HorizontalAlignment="Left" Margin="16,50,0,16" Padding="12,10">
-                <DockPanel>
+            <!-- Patch notes panel. Both the background and the text/icons sit at 15% opacity at
+                 rest so the whole panel blends into the art behind it, then fade up to fully
+                 legible (background to its original ~55%, content to fully opaque) on hover.
+                 Background is a named Brush rather than baked into the Border's own Opacity so
+                 it can animate independently of (but in sync with) the content's Opacity. -->
+            <Border CornerRadius="6" Width="240" HorizontalAlignment="Left" Margin="16,50,0,16" Padding="12,10">
+                <Border.Background>
+                    <SolidColorBrush x:Name="PatchNotesBg" Color="#0A0B0E" Opacity="0.15"/>
+                </Border.Background>
+                <Border.Triggers>
+                    <EventTrigger RoutedEvent="MouseEnter">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="PatchNotesBg" Storyboard.TargetProperty="Opacity" To="0.55" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="PatchNotesContent" Storyboard.TargetProperty="Opacity" To="1.0" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="MouseLeave">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="PatchNotesBg" Storyboard.TargetProperty="Opacity" To="0.15" Duration="0:0:0.3"/>
+                                <DoubleAnimation Storyboard.TargetName="PatchNotesContent" Storyboard.TargetProperty="Opacity" To="0.15" Duration="0:0:0.3"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Border.Triggers>
+                <DockPanel x:Name="PatchNotesContent" Opacity="0.15">
                     <TextBlock DockPanel.Dock="Top" Text="Patch notes" Foreground="#F2F3F5" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"/>
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <ScrollViewer.Resources>
+                            <!-- Thin purple glowing scrollbar, styled to match the download
+                                 progress bar at the bottom of the window (#C88FF7 + soft
+                                 DropShadowEffect glow). Implicit (keyless) styles here apply to
+                                 the ScrollBar/Thumb/RepeatButton parts inside this ScrollViewer's
+                                 own default template, so this is scoped to just this panel. -->
+                            <Style x:Key="PatchNotesThumb" TargetType="Thumb">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <!-- The crystal rides centered on the rail; RenderTransformOrigin
+                                                 keeps the hover/drag scale-up centered on the icon itself. -->
+                                            <Image x:Name="ThumbIcon" Source="Assets/scrollbar-icon.png" Stretch="Uniform"
+                                                   Width="14" RenderTransformOrigin="0.5,0.5">
+                                                <Image.RenderTransform>
+                                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                </Image.RenderTransform>
+                                                <Image.Effect>
+                                                    <DropShadowEffect Color="#C88FF7" ShadowDepth="0" BlurRadius="4" Opacity="0.7"/>
+                                                </Image.Effect>
+                                            </Image>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ThumbIcon" Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect Color="#C88FF7" ShadowDepth="0" BlurRadius="7" Opacity="0.9"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Setter TargetName="ThumbIcon" Property="RenderTransform">
+                                                        <Setter.Value>
+                                                            <ScaleTransform ScaleX="1.15" ScaleY="1.15"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                                <Trigger Property="IsDragging" Value="True">
+                                                    <Setter TargetName="ThumbIcon" Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect Color="#E6CCFF" ShadowDepth="0" BlurRadius="9" Opacity="1.0"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Setter TargetName="ThumbIcon" Property="RenderTransform">
+                                                        <Setter.Value>
+                                                            <ScaleTransform ScaleX="1.3" ScaleY="1.3"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                            <Style x:Key="PatchNotesPageButton" TargetType="RepeatButton">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Rectangle Fill="Transparent"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                            <Style TargetType="ScrollBar">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ScrollBar">
+                                            <!-- Width is set here, on this inner Grid, rather than relying on the
+                                                 ScrollBar's own Width property - ScrollViewer's default chrome
+                                                 locally sets a Width on its internal scrollbar part, which as a
+                                                 local value always beats a Style Setter, so a Setter on ScrollBar
+                                                 itself is silently ignored no matter what it's set to. Anchoring
+                                                 the visible track to a fixed width here, right-aligned within
+                                                 whatever wider (invisible) box the ScrollBar actually occupies,
+                                                 sidesteps that entirely. Wide enough to host the crystal icon
+                                                 riding along it, not just a hairline. -->
+                                            <Grid Width="16" HorizontalAlignment="Right">
+                                                <!-- Purple field across the whole gutter, plus a slightly
+                                                     brighter hairline rail down the center that the crystal
+                                                     visually "rides" on. -->
+                                                <Rectangle Fill="#332D1B57"/>
+                                                <Rectangle Width="2" Fill="#66C88FF7" HorizontalAlignment="Center"/>
+                                                <Track x:Name="PART_Track" IsDirectionReversed="True" IsEnabled="{TemplateBinding IsEnabled}">
+                                                    <Track.DecreaseRepeatButton>
+                                                        <RepeatButton Style="{StaticResource PatchNotesPageButton}" Command="ScrollBar.PageUpCommand"/>
+                                                    </Track.DecreaseRepeatButton>
+                                                    <Track.IncreaseRepeatButton>
+                                                        <RepeatButton Style="{StaticResource PatchNotesPageButton}" Command="ScrollBar.PageDownCommand"/>
+                                                    </Track.IncreaseRepeatButton>
+                                                    <Track.Thumb>
+                                                        <Thumb Style="{StaticResource PatchNotesThumb}"/>
+                                                    </Track.Thumb>
+                                                </Track>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ScrollViewer.Resources>
                         <ItemsControl x:Name="NewsList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
