@@ -1796,17 +1796,19 @@
             </StackPanel>
 
             <!-- Patch notes panel -->
-            <Border Background="#8C0A0B0E" CornerRadius="6" Width="240" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="16,50,0,16" Padding="12,10">
-                <StackPanel>
-                    <TextBlock Text="Patch notes" Foreground="#F2F3F5" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                    <ItemsControl x:Name="NewsList">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" Foreground="#A8ACB5" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
+            <Border Background="#8C0A0B0E" CornerRadius="6" Width="240" HorizontalAlignment="Left" Margin="16,50,0,16" Padding="12,10">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Patch notes" Foreground="#F2F3F5" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl x:Name="NewsList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Foreground="#A8ACB5" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
             </Border>
 
             <!-- First-run overlay: shown when no client is found at ClientPath -->
