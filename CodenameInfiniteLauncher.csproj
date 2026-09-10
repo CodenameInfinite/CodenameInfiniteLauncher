@@ -14,10 +14,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- config.json is deliberately NOT copied to the output/publish folder — it's the user's
+         real, personal settings (own client path, own realm address), and this project ships
+         to players via that output folder. Copying it here would bundle whoever last built the
+         project's own local config into every release. config.example.json is the only one
+         that travels; ConfigService seeds a real config.json from it on first run when one
+         isn't already present. See SelfUpdateService's "personal config is sacred" comment for
+         the same rule enforced on the update-swap path. -->
     <None Update="config.example.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="config.json" Condition="Exists('config.json')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Resource Include="Assets\background.png" />
