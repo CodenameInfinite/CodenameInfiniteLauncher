@@ -19,11 +19,16 @@ public class LauncherConfig
     /// </summary>
     public string TorrentDownloadPath { get; set; } = "";
 
-    /// <summary>
-    /// The WIP graphics client's exe name — resolves the WOW install's own Data folder from
-    /// wherever this exe sits, so it just needs to be dropped into the existing ClientPath
-    /// alongside Data/, no separate client folder.
-    /// </summary>
+    /// <summary>The WIP graphics client's own dedicated install folder — a whole separate
+    /// install from ClientPath, not a file dropped alongside the stock exe. Empty until
+    /// WipClientService.DownloadAndInstallAsync creates it (defaults to a sibling of
+    /// ClientPath the first time, see MainWindow's WipClientPath-or-default resolution).
+    /// Holds nothing but the exe: no Data/ copy, no duplicated GBs — PlayButton_Click points
+    /// its process at ClientPath's existing Data/ via the WOW_DATA environment variable
+    /// instead, same install either way.</summary>
+    public string WipClientPath { get; set; } = "";
+
+    /// <summary>The WIP client's exe name, resolved within WipClientPath (not ClientPath).</summary>
     public string WipExeName { get; set; } = "benilla.exe";
 
     /// <summary>Opened via the OS default handler from the WIP Client toggle's prompt, same
@@ -31,6 +36,7 @@ public class LauncherConfig
     public string WipClientDownloadUri { get; set; } = "";
 
     /// <summary>Persisted so the player's choice survives a restart; PlayButton_Click reads
-    /// this to pick WipExeName vs. ExeName within the same ClientPath.</summary>
+    /// this to pick the WIP client (WipClientPath/WipExeName + ClientPath's Data via WOW_DATA)
+    /// vs. the stock one (ClientPath/ExeName, unchanged).</summary>
     public bool UseWipClient { get; set; } = false;
 }

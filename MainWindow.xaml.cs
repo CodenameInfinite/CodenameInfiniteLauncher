@@ -415,15 +415,30 @@ public partial class MainWindow : Window
 
     private void PlayButton_Click(object sender, RoutedEventArgs e)
     {
-        // The WIP client resolves its own Data folder relative to wherever its exe sits, so it
-        // only needs to be dropped into the same ClientPath the stock client already uses.
-        var exeName = _config.UseWipClient ? _config.WipExeName : _config.ExeName;
-        var exePath = System.IO.Path.Combine(_config.ClientPath, exeName);
+        if (_config.UseWipClient)
+        {
+            var wipExePath = System.IO.Path.Combine(_config.WipClientPath, _config.WipExeName);
+            if (string.IsNullOrWhiteSpace(_config.WipClientPath) || !System.IO.File.Exists(wipExePath))
+            {
+                StatusText.Text = $"WIP Client is on, but it isn't installed yet — click \"WIP Client\" to download it, or turn it off to play the stock client";
+                return;
+            }
+
+            // The WIP install carries no Data/ of its own — point it at the stock client's
+            // existing Data folder via WOW_DATA instead of duplicating tens of GB on disk.
+            // UseShellExecute must be false here: Windows ignores EnvironmentVariables changes
+            // when the process is launched through the shell.
+            var psi = new ProcessStartInfo(wipExePath) { WorkingDirectory = _config.WipClientPath, UseShellExecute = false };
+            psi.EnvironmentVariables["WOW_DATA"] = System.IO.Path.Combine(_config.ClientPath, "Data");
+            Process.Start(psi);
+            Close();
+            return;
+        }
+
+        var exePath = System.IO.Path.Combine(_config.ClientPath, _config.ExeName);
         if (!System.IO.File.Exists(exePath))
         {
-            StatusText.Text = _config.UseWipClient
-                ? $"WIP Client is on, but {exeName} isn't in {_config.ClientPath} — click \"WIP Client\" to download it, or turn it off to play the stock client"
-                : $"can't find {exeName} in {_config.ClientPath}";
+            StatusText.Text = $"can't find {_config.ExeName} in {_config.ClientPath}";
             return;
         }
 
@@ -439,8 +454,10 @@ public partial class MainWindow : Window
     {
         if (!_config.UseWipClient)
         {
-            var exePath = System.IO.Path.Combine(_config.ClientPath, _config.WipExeName);
-            if (!System.IO.File.Exists(exePath))
+            var exePath = string.IsNullOrWhiteSpace(_config.WipClientPath)
+                ? null
+                : System.IO.Path.Combine(_config.WipClientPath, _config.WipExeName);
+            if (exePath == null || !System.IO.File.Exists(exePath))
             {
                 if (!await InstallWipClientAsync()) return; // status already set by the helper
             }

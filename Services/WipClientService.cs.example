@@ -9,8 +9,10 @@ namespace CodenameInfiniteLauncher.Services;
 
 /// <summary>
 /// Fetches the WIP graphics client's latest release from the private benilla-everwood repo and
-/// installs its exe straight into the player's configured ClientPath, beside the stock client's
-/// Data folder it already reads from there.
+/// installs it as a whole separate client under its own WipClientPath — not a file dropped into
+/// the stock client's ClientPath. It carries no Data/ of its own; PlayButton_Click points its
+/// process at ClientPath's existing Data/ via the WOW_DATA environment variable at launch, so
+/// nothing here duplicates the tens of GB already on disk.
 ///
 /// benilla-everwood is private, so unlike SelfUpdateService's target this needs a token on every
 /// request — a fine-grained, read-only, single-repo Personal Access Token committed here so every
@@ -61,9 +63,11 @@ public class WipClientService
     }
 
     /// <summary>Downloads the release zip (the private-repo asset API, not BrowserDownloadUrl,
-    /// which a token cannot use), extracts it, and copies whatever exe it contains to
-    /// &lt;ClientPath&gt;\&lt;WipExeName&gt; — the only thing Play's launch logic looks for.
-    /// Throws on failure; the caller reports it, nothing here touches config.json.</summary>
+    /// which a token cannot use), extracts it, and copies whatever exe it contains into its own
+    /// dedicated WipClientPath — defaulted to a sibling of ClientPath the first time this runs,
+    /// so the player never has to pick a second folder themselves. Mutates _config.WipClientPath
+    /// in place; MainWindow's existing ConfigService.Save after this call persists it, same as
+    /// everything else that touches _config. Throws on failure; the caller reports it.</summary>
     public async Task DownloadAndInstallAsync(AssetInfo asset, IProgress<(int percent, string status)> progress)
     {
         var tempDir = Path.Combine(Path.GetTempPath(), "CNIWipClient_" + Guid.NewGuid().ToString("N"));
@@ -103,8 +107,14 @@ public class WipClientService
         if (exeSrc == null)
             throw new InvalidOperationException("Downloaded WIP client archive has no .exe in it — aborting, nothing was installed.");
 
-        Directory.CreateDirectory(_config.ClientPath);
-        var dest = Path.Combine(_config.ClientPath, _config.WipExeName);
+        if (string.IsNullOrWhiteSpace(_config.WipClientPath))
+        {
+            var clientParent = Path.GetDirectoryName(Path.GetFullPath(_config.ClientPath)) ?? _config.ClientPath;
+            _config.WipClientPath = Path.Combine(clientParent, "CodenameInfinite-Client-benilla-everwood");
+        }
+
+        Directory.CreateDirectory(_config.WipClientPath);
+        var dest = Path.Combine(_config.WipClientPath, _config.WipExeName);
         File.Copy(exeSrc, dest, overwrite: true);
 
         try { Directory.Delete(tempDir, true); } catch { /* best-effort cleanup */ }
