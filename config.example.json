@@ -6,6 +6,7 @@
   "clientDownloadUri": "https://drive.google.com/file/d/17jHuVjDlga-oJ5ckFN3H0vIAU8J6byQ7/view?usp=sharing",
   "torrentDownloadPath": "",
   "wipClientPath": "",
+  "wipInstalledVersion": "",
   "wipExeName": "benilla.exe",
   "wipClientDownloadUri": "https://github.com/CodenameInfinite/CodenameInfinite-Client-benilla-everwood/releases",
   "useWipClient": false

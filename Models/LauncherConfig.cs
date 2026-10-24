@@ -31,6 +31,13 @@ public class LauncherConfig
     /// <summary>The WIP client's exe name, resolved within WipClientPath (not ClientPath).</summary>
     public string WipExeName { get; set; } = "benilla.exe";
 
+    /// <summary>The release tag of whatever's currently sitting in WipClientPath — set after a
+    /// successful DownloadAndInstallAsync. Compared against the latest release's tag every time
+    /// WIP Client is turned on, so toggling it off and back on (with the exe already present)
+    /// doesn't skip a real update — exe-presence alone can't tell an old install from a current
+    /// one.</summary>
+    public string WipInstalledVersion { get; set; } = "";
+
     /// <summary>Opened via the OS default handler from the WIP Client toggle's prompt, same
     /// hand-off pattern as ClientDownloadUri — a GitHub releases page, typically.</summary>
     public string WipClientDownloadUri { get; set; } = "";

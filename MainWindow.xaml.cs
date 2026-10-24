@@ -492,21 +492,15 @@ public partial class MainWindow : Window
         }
     }
 
-    /// <summary>Toggles which exe Play launches. Turning it on when the WIP exe isn't present
-    /// (or a newer release exists) fetches and installs it first via WipClientService's
-    /// authenticated download, rather than silently flipping to a state that will fail on
-    /// Play — same "tell them, don't surprise them" instinct as the first-run overlay.</summary>
+    /// <summary>Toggles which exe Play launches. Turning it on always checks the latest release
+    /// (cheap — one API call) and installs it first via WipClientService's authenticated
+    /// download, rather than silently flipping to a state that will fail on Play — same "tell
+    /// them, don't surprise them" instinct as the first-run overlay.</summary>
     private async void WipClientButton_Click(object sender, RoutedEventArgs e)
     {
         if (!_config.UseWipClient)
         {
-            var exePath = string.IsNullOrWhiteSpace(_config.WipClientPath)
-                ? null
-                : System.IO.Path.Combine(_config.WipClientPath, _config.WipExeName);
-            if (exePath == null || !System.IO.File.Exists(exePath))
-            {
-                if (!await InstallWipClientAsync()) return; // status already set by the helper
-            }
+            if (!await EnsureWipClientUpToDateAsync()) return; // status already set by the helper
         }
 
         _config.UseWipClient = !_config.UseWipClient;
@@ -514,9 +508,12 @@ public partial class MainWindow : Window
         RefreshWipClientButton();
     }
 
-    /// <summary>Checks the private repo for a release and downloads/installs it. Returns false
-    /// (leaving the toggle untouched) on any failure, with StatusText explaining why.</summary>
-    private async Task<bool> InstallWipClientAsync()
+    /// <summary>Checks the private repo's latest release and installs it if WipClientPath's exe
+    /// is missing or its recorded WipInstalledVersion doesn't match — exe presence alone can't
+    /// tell a stale install from a current one, which is exactly why turning WIP Client off then
+    /// back on used to silently skip real updates. Returns false (leaving the toggle untouched)
+    /// on any failure, with StatusText explaining why.</summary>
+    private async Task<bool> EnsureWipClientUpToDateAsync()
     {
         // Refuse rather than silently create ClientPath from scratch and drop the WIP exe into
         // an empty/placeholder folder: that "succeeds" with nothing actually playable, and looks
@@ -541,8 +538,21 @@ public partial class MainWindow : Window
                 return false;
             }
 
+            var exePath = string.IsNullOrWhiteSpace(_config.WipClientPath)
+                ? null
+                : System.IO.Path.Combine(_config.WipClientPath, _config.WipExeName);
+            var upToDate = exePath != null
+                && System.IO.File.Exists(exePath)
+                && string.Equals(_config.WipInstalledVersion, asset.Version, StringComparison.OrdinalIgnoreCase);
+            if (upToDate)
+            {
+                StatusText.Text = $"WIP client {asset.Version} is already installed";
+                return true;
+            }
+
             var progress = new Progress<(int percent, string status)>(p => StatusText.Text = $"{p.status} ({p.percent}%)");
             await _wipClientService.DownloadAndInstallAsync(asset, progress);
+            _config.WipInstalledVersion = asset.Version;
             StatusText.Text = $"WIP client {asset.Version} installed";
             return true;
         }
