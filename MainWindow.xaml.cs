@@ -96,13 +96,10 @@ public partial class MainWindow : Window
 
         try
         {
+            // Stock client only — Benilla (the WIP client) doesn't read realmlist.wtf at all;
+            // its realm address is set via the WOW_HOST environment variable at launch instead,
+            // see PlayButton_Click.
             RealmlistService.EnsureRealmlist(_config.ClientPath, _config.RealmAddress);
-
-            // The WIP client is its own install with its own realmlist.wtf — it doesn't read
-            // ClientPath's copy, so it needs the same fix applied separately or it's stuck on
-            // whatever (if anything) shipped in the release zip.
-            if (!string.IsNullOrWhiteSpace(_config.WipClientPath) && System.IO.Directory.Exists(_config.WipClientPath))
-                RealmlistService.EnsureRealmlist(_config.WipClientPath, _config.RealmAddress);
         }
         catch (Exception ex)
         {
@@ -432,10 +429,14 @@ public partial class MainWindow : Window
 
             // The WIP install carries no Data/ of its own — point it at the stock client's
             // existing Data folder via WOW_DATA instead of duplicating tens of GB on disk.
+            // Benilla also doesn't read realmlist.wtf at all (that's reference-client behavior
+            // it deliberately deviates from) — its realm address lives in its own config.toml,
+            // with $WOW_HOST overriding it for just this session and never touching the file.
             // UseShellExecute must be false here: Windows ignores EnvironmentVariables changes
             // when the process is launched through the shell.
             var psi = new ProcessStartInfo(wipExePath) { WorkingDirectory = _config.WipClientPath, UseShellExecute = false };
             psi.EnvironmentVariables["WOW_DATA"] = System.IO.Path.Combine(_config.ClientPath, "Data");
+            psi.EnvironmentVariables["WOW_HOST"] = _config.RealmAddress;
             Process.Start(psi);
             Close();
             return;
@@ -503,7 +504,6 @@ public partial class MainWindow : Window
 
             var progress = new Progress<(int percent, string status)>(p => StatusText.Text = $"{p.status} ({p.percent}%)");
             await _wipClientService.DownloadAndInstallAsync(asset, progress);
-            RealmlistService.EnsureRealmlist(_config.WipClientPath, _config.RealmAddress);
             StatusText.Text = $"WIP client {asset.Version} installed";
             return true;
         }
