@@ -97,6 +97,12 @@ public partial class MainWindow : Window
         try
         {
             RealmlistService.EnsureRealmlist(_config.ClientPath, _config.RealmAddress);
+
+            // The WIP client is its own install with its own realmlist.wtf — it doesn't read
+            // ClientPath's copy, so it needs the same fix applied separately or it's stuck on
+            // whatever (if anything) shipped in the release zip.
+            if (!string.IsNullOrWhiteSpace(_config.WipClientPath) && System.IO.Directory.Exists(_config.WipClientPath))
+                RealmlistService.EnsureRealmlist(_config.WipClientPath, _config.RealmAddress);
         }
         catch (Exception ex)
         {
@@ -497,6 +503,7 @@ public partial class MainWindow : Window
 
             var progress = new Progress<(int percent, string status)>(p => StatusText.Text = $"{p.status} ({p.percent}%)");
             await _wipClientService.DownloadAndInstallAsync(asset, progress);
+            RealmlistService.EnsureRealmlist(_config.WipClientPath, _config.RealmAddress);
             StatusText.Text = $"WIP client {asset.Version} installed";
             return true;
         }
