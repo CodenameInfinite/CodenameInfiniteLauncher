@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -15,6 +16,7 @@ public partial class MainWindow : Window
     private readonly LauncherConfig _config;
     private readonly UpdateService _updateService;
     private readonly ClientVerifyService _clientVerifyService;
+    private readonly AddonService _addonService;
     private readonly SelfUpdateService _selfUpdateService = new();
     private readonly ClientWatchService _clientWatchService = new();
     private CancellationTokenSource? _downloadWatchCts;
@@ -25,6 +27,7 @@ public partial class MainWindow : Window
         _config = config;
         _updateService = new UpdateService(config);
         _clientVerifyService = new ClientVerifyService(config);
+        _addonService = new AddonService(config);
 
         // Same version SelfUpdateService compares against GitHub releases (assembly version,
         // driven by <Version> in the csproj) - trimmed to Major.Minor.Build so it reads "v1.0.3"
@@ -33,6 +36,8 @@ public partial class MainWindow : Window
         VersionText.Text = version != null
             ? $"CodenameInfinite v{version.Major}.{version.Minor}.{version.Build}"
             : "CodenameInfinite";
+
+        RefreshWipClientButton();
 
         Loaded += MainWindow_Loaded;
     }
@@ -257,6 +262,7 @@ public partial class MainWindow : Window
     {
         PlayButton.IsEnabled = ready;
         VerifyFilesButton.IsEnabled = ready;
+        AddonsButton.IsEnabled = ready;
         BackgroundAccents.BeginAnimation(OpacityProperty, new DoubleAnimation(ready ? 1.0 : 0.0, TimeSpan.FromSeconds(ready ? 1.2 : 0.5)));
     }
 
@@ -322,17 +328,138 @@ public partial class MainWindow : Window
         SetReadyToLaunch(true);
     }
 
+    /// <summary>Opens the Addons overlay and loads the current list from the dashboard.</summary>
+    private async void AddonsButton_Click(object sender, RoutedEventArgs e)
+    {
+        AddonsOverlay.Visibility = Visibility.Visible;
+        await RefreshAddonsListAsync();
+    }
+
+    private void AddonsCloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        AddonsOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    /// <summary>Fetches the addon list and rebuilds AddonsList's rows from scratch — install
+    /// state is re-derived from disk each time rather than tracked incrementally, so this stays
+    /// correct even if someone hand-edits Interface\AddOns\ between opens.</summary>
+    private async Task RefreshAddonsListAsync()
+    {
+        AddonsStatusText.Text = "loading addons...";
+
+        List<AddonEntry> addons;
+        try
+        {
+            addons = await _addonService.FetchAddonsAsync();
+        }
+        catch (Exception ex)
+        {
+            AddonsStatusText.Text = $"couldn't reach the server: {ex.Message}";
+            AddonsList.ItemsSource = null;
+            return;
+        }
+
+        var rows = addons.Select(a => new AddonRow
+        {
+            Addon = a,
+            ButtonText = !_addonService.IsInstalled(a) ? "Install"
+                       : _addonService.HasUpdate(a) ? "Update"
+                       : "Uninstall",
+            ButtonEnabled = true
+        }).ToList();
+
+        AddonsList.ItemsSource = rows;
+        AddonsStatusText.Text = rows.Count == 0 ? "no addons available" : "";
+    }
+
+    /// <summary>Single button per row does Install, Update, or Uninstall depending on current
+    /// state (see RefreshAddonsListAsync) — the Tag carries which AddonRow it belongs to.</summary>
+    private async void AddonActionButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not AddonRow row) return;
+
+        button.IsEnabled = false;
+        var addon = row.Addon;
+
+        if (button.Content as string == "Uninstall")
+        {
+            try
+            {
+                _addonService.UninstallAddon(addon);
+                AddonsStatusText.Text = $"removed {addon.Title}";
+            }
+            catch (Exception ex)
+            {
+                AddonsStatusText.Text = $"couldn't remove {addon.Title}: {ex.Message}";
+            }
+
+            await RefreshAddonsListAsync();
+            return;
+        }
+
+        var progress = new Progress<(int percent, string status)>(p => AddonsStatusText.Text = p.status);
+        try
+        {
+            await _addonService.InstallAddonAsync(addon, progress);
+            AddonsStatusText.Text = $"installed {addon.Title}";
+        }
+        catch (Exception ex)
+        {
+            AddonsStatusText.Text = $"couldn't install {addon.Title}: {ex.Message}";
+        }
+
+        await RefreshAddonsListAsync();
+    }
+
     private void PlayButton_Click(object sender, RoutedEventArgs e)
     {
-        var exePath = System.IO.Path.Combine(_config.ClientPath, _config.ExeName);
+        // The WIP client resolves its own Data folder relative to wherever its exe sits, so it
+        // only needs to be dropped into the same ClientPath the stock client already uses.
+        var exeName = _config.UseWipClient ? _config.WipExeName : _config.ExeName;
+        var exePath = System.IO.Path.Combine(_config.ClientPath, exeName);
         if (!System.IO.File.Exists(exePath))
         {
-            StatusText.Text = $"can't find {_config.ExeName} in {_config.ClientPath}";
+            StatusText.Text = _config.UseWipClient
+                ? $"WIP Client is on, but {exeName} isn't in {_config.ClientPath} — click \"WIP Client\" to download it, or turn it off to play the stock client"
+                : $"can't find {exeName} in {_config.ClientPath}";
             return;
         }
 
         Process.Start(new ProcessStartInfo(exePath) { WorkingDirectory = _config.ClientPath, UseShellExecute = true });
         Close();
+    }
+
+    /// <summary>Toggles which exe Play launches. Turning it on when the WIP exe isn't present
+    /// yet offers the download link rather than silently flipping to a state that will fail on
+    /// Play — same "tell them, don't surprise them" instinct as the first-run overlay.</summary>
+    private void WipClientButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_config.UseWipClient)
+        {
+            var exePath = System.IO.Path.Combine(_config.ClientPath, _config.WipExeName);
+            if (!System.IO.File.Exists(exePath) && !string.IsNullOrWhiteSpace(_config.WipClientDownloadUri))
+            {
+                var result = MessageBox.Show(
+                    $"The WIP graphics client ({_config.WipExeName}) isn't in your client folder yet.\n\n" +
+                    $"Open the download page, then drop {_config.WipExeName} into:\n{_config.ClientPath}",
+                    "WIP Client", MessageBoxButton.OKCancel, MessageBoxImage.Information);
+                if (result == MessageBoxResult.OK)
+                    Process.Start(new ProcessStartInfo(_config.WipClientDownloadUri) { UseShellExecute = true });
+                return;
+            }
+        }
+
+        _config.UseWipClient = !_config.UseWipClient;
+        ConfigService.Save(_config);
+        RefreshWipClientButton();
+    }
+
+    private void RefreshWipClientButton()
+    {
+        WipClientButton.Content = _config.UseWipClient ? "WIP Client: On" : "WIP Client: Off";
+        WipClientButton.Foreground = _config.UseWipClient
+            ? new SolidColorBrush(Color.FromRgb(0x5D, 0xCA, 0xA5))
+            : new SolidColorBrush(Color.FromRgb(0xA8, 0xAC, 0xB5));
     }
 
     private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

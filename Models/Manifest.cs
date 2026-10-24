@@ -45,3 +45,23 @@ public class BaseFileEntry
     public string Sha256 { get; set; } = "";
     public string Url { get; set; } = "";
 }
+
+/// <summary>Response shape of GET /Downloads/AddonList. "Folder" is also the Interface\AddOns\
+/// subfolder name to install into and the SavedVariables-scoping identity, so it's the key
+/// used everywhere (install state, matching against a local copy) rather than Title.</summary>
+public class AddonsResponse
+{
+    public List<AddonEntry> Addons { get; set; } = new();
+}
+
+public class AddonEntry
+{
+    public string Folder { get; set; } = "";
+    public string Title { get; set; } = "";
+    public string Notes { get; set; } = "";
+    public string Version { get; set; } = "";
+    public string Author { get; set; } = "";
+    public long SizeBytes { get; set; }
+    public string Sha256 { get; set; } = "";
+    public string Url { get; set; } = "";
+}

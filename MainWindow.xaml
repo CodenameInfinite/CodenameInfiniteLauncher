@@ -1793,6 +1793,33 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
+                <Button x:Name="AddonsButton" Content="Addons" Margin="6,0,0,0"
+                        Padding="8,3" Background="#8C0A0B0E" Foreground="#A8ACB5" FontSize="11"
+                        BorderThickness="0" Cursor="Hand" IsEnabled="False" Click="AddonsButton_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <!-- Experimental WIP graphics client toggle: swaps which exe Play launches,
+                     within the same ClientPath, between the stock client and the WIP one.
+                     Off (default) until the player opts in, matching VerifyFiles/Addons' pill
+                     look so it reads as a peer feature, not a warning. -->
+                <Button x:Name="WipClientButton" Content="WIP Client: Off" Margin="6,0,0,0"
+                        Padding="8,3" Background="#8C0A0B0E" Foreground="#A8ACB5" FontSize="11"
+                        BorderThickness="0" Cursor="Hand" Click="WipClientButton_Click"
+                        ToolTip="Try the experimental graphics client (bloom, shadows, volumetric fog). Needs a benilla.exe dropped into your client folder — click to see how.">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
             </StackPanel>
 
             <!-- Patch notes panel. Both the background and the text/icons sit at 15% opacity at
@@ -1946,6 +1973,57 @@
                             Background="Transparent" Foreground="#D6D9DF" FontSize="12" BorderBrush="#4B4F58"
                             BorderThickness="1" Click="LocateClientButton_Click"/>
                 </StackPanel>
+            </Border>
+
+            <!-- Addons overlay: optional player-chosen addons, distinct from the mandatory
+                 patches applied automatically at startup. Toggled by AddonsButton; hidden by
+                 default and by its own close button, same show/hide pattern as FirstRunOverlay. -->
+            <Border x:Name="AddonsOverlay" Background="#E60A0B0E" Visibility="Collapsed">
+                <Grid Width="420" MaxHeight="480" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <TextBlock Text="Addons" Foreground="#F2F3F5" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Left"/>
+                        <Button x:Name="AddonsCloseButton" Content="&#x2715;" Width="24" Height="24" HorizontalAlignment="Right"
+                                Background="Transparent" Foreground="#A8ACB5" BorderThickness="0" Cursor="Hand"
+                                Click="AddonsCloseButton_Click"/>
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl x:Name="AddonsList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#8C15161C" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Title}" Foreground="#F2F3F5" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding VersionText}" Foreground="#7C8A9A" FontSize="11" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Notes}" Foreground="#A8ACB5" FontSize="11" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Content="{Binding ButtonText}" Tag="{Binding}" Width="80" Height="26"
+                                                    IsEnabled="{Binding ButtonEnabled}" FontSize="11"
+                                                    Background="#5DCAA5" Foreground="#04342C" BorderThickness="0" Cursor="Hand"
+                                                    Click="AddonActionButton_Click" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <TextBlock x:Name="AddonsStatusText" Grid.Row="2" Text="" Foreground="#A8ACB5" FontSize="11"
+                               HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                </Grid>
             </Border>
         </Grid>
 
