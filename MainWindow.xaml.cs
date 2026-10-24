@@ -19,6 +19,7 @@ public partial class MainWindow : Window
     private readonly AddonService _addonService;
     private readonly SelfUpdateService _selfUpdateService = new();
     private readonly ClientWatchService _clientWatchService = new();
+    private readonly WipClientService _wipClientService;
     private CancellationTokenSource? _downloadWatchCts;
 
     public MainWindow(LauncherConfig config)
@@ -28,6 +29,7 @@ public partial class MainWindow : Window
         _updateService = new UpdateService(config);
         _clientVerifyService = new ClientVerifyService(config);
         _addonService = new AddonService(config);
+        _wipClientService = new WipClientService(config);
 
         // Same version SelfUpdateService compares against GitHub releases (assembly version,
         // driven by <Version> in the csproj) - trimmed to Major.Minor.Build so it reads "v1.0.3"
@@ -430,28 +432,66 @@ public partial class MainWindow : Window
     }
 
     /// <summary>Toggles which exe Play launches. Turning it on when the WIP exe isn't present
-    /// yet offers the download link rather than silently flipping to a state that will fail on
+    /// (or a newer release exists) fetches and installs it first via WipClientService's
+    /// authenticated download, rather than silently flipping to a state that will fail on
     /// Play — same "tell them, don't surprise them" instinct as the first-run overlay.</summary>
-    private void WipClientButton_Click(object sender, RoutedEventArgs e)
+    private async void WipClientButton_Click(object sender, RoutedEventArgs e)
     {
         if (!_config.UseWipClient)
         {
             var exePath = System.IO.Path.Combine(_config.ClientPath, _config.WipExeName);
-            if (!System.IO.File.Exists(exePath) && !string.IsNullOrWhiteSpace(_config.WipClientDownloadUri))
+            if (!System.IO.File.Exists(exePath))
             {
-                var result = MessageBox.Show(
-                    $"The WIP graphics client ({_config.WipExeName}) isn't in your client folder yet.\n\n" +
-                    $"Open the download page, then drop {_config.WipExeName} into:\n{_config.ClientPath}",
-                    "WIP Client", MessageBoxButton.OKCancel, MessageBoxImage.Information);
-                if (result == MessageBoxResult.OK)
-                    Process.Start(new ProcessStartInfo(_config.WipClientDownloadUri) { UseShellExecute = true });
-                return;
+                if (!await InstallWipClientAsync()) return; // status already set by the helper
             }
         }
 
         _config.UseWipClient = !_config.UseWipClient;
         ConfigService.Save(_config);
         RefreshWipClientButton();
+    }
+
+    /// <summary>Checks the private repo for a release and downloads/installs it. Returns false
+    /// (leaving the toggle untouched) on any failure, with StatusText explaining why.</summary>
+    private async Task<bool> InstallWipClientAsync()
+    {
+        // Refuse rather than silently create ClientPath from scratch and drop the WIP exe into
+        // an empty/placeholder folder: that "succeeds" with nothing actually playable, and looks
+        // indistinguishable from the download itself failing. The stock exe already being there
+        // is the signal this IS the real client folder, not wherever config.json happened to
+        // default to.
+        var stockExePath = System.IO.Path.Combine(_config.ClientPath, _config.ExeName);
+        if (string.IsNullOrWhiteSpace(_config.ClientPath) || !System.IO.File.Exists(stockExePath))
+        {
+            StatusText.Text = $"set your client folder first (can't find {_config.ExeName} in \"{_config.ClientPath}\") — use \"Locate existing install\" below";
+            return false;
+        }
+
+        WipClientButton.IsEnabled = false;
+        try
+        {
+            StatusText.Text = "checking for WIP client...";
+            var asset = await _wipClientService.GetLatestAsync();
+            if (asset == null)
+            {
+                StatusText.Text = "couldn't reach the WIP client release — check your connection and try again";
+                return false;
+            }
+
+            var progress = new Progress<(int percent, string status)>(p => StatusText.Text = $"{p.status} ({p.percent}%)");
+            await _wipClientService.DownloadAndInstallAsync(asset, progress);
+            StatusText.Text = $"WIP client {asset.Version} installed";
+            return true;
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"WIP client install failed: {ex.Message}";
+            return false;
+        }
+        finally
+        {
+            WipClientButton.IsEnabled = true;
+        }
     }
 
     private void RefreshWipClientButton()

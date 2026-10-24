@@ -19,4 +19,13 @@ public class GitHubAsset
 
     [JsonPropertyName("browser_download_url")]
     public string BrowserDownloadUrl { get; set; } = "";
+
+    /// <summary>The asset's API url — the only way to fetch a private repo's asset bytes with a
+    /// token (GET + "Accept: application/octet-stream" + "Authorization"). BrowserDownloadUrl
+    /// only works for a logged-in browser session with repo access, never for a token.</summary>
+    [JsonPropertyName("url")]
+    public string ApiUrl { get; set; } = "";
+
+    [JsonPropertyName("size")]
+    public long Size { get; set; }
 }

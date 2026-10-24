@@ -3,3 +3,7 @@ obj/
 config.json
 *.user
 run.log
+
+# Carries a real, live PAT — same "never lands in git" rule as config.json. The committed
+# Services/WipClientService.cs.example is the tracked skeleton; this is the real, filled-in copy.
+Services/WipClientService.cs

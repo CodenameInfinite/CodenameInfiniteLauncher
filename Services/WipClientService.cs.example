@@ -1,0 +1,112 @@
+using System.IO;
+using System.IO.Compression;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using CodenameInfiniteLauncher.Models;
+
+namespace CodenameInfiniteLauncher.Services;
+
+/// <summary>
+/// Fetches the WIP graphics client's latest release from the private benilla-everwood repo and
+/// installs its exe straight into the player's configured ClientPath, beside the stock client's
+/// Data folder it already reads from there.
+///
+/// benilla-everwood is private, so unlike SelfUpdateService's target this needs a token on every
+/// request — a fine-grained, read-only, single-repo Personal Access Token committed here so every
+/// player's launcher can fetch it regardless of whether that player has their own GitHub access.
+/// Read-only Contents scope on exactly one repo: the worst a decompiled copy of this token buys
+/// anyone is read access to that one repo's source and releases, nothing of the player's own.
+/// </summary>
+public class WipClientService
+{
+    private const string ReleasesApiUrl = "https://api.github.com/repos/CodenameInfinite/CodenameInfinite-Client-benilla-everwood/releases/latest";
+
+    // Fine-grained PAT: Contents: Read-only, scoped to CodenameInfinite/benilla-everwood only.
+    private const string ReadOnlyToken = "github_pat_PLACEHOLDER"; // fill in your own fine-grained PAT (Contents: Read-only, scoped to the benilla-everwood repo)
+
+    private readonly LauncherConfig _config;
+    private readonly HttpClient _http;
+
+    public WipClientService(LauncherConfig config)
+    {
+        _config = config;
+        _http = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
+        _http.DefaultRequestHeaders.UserAgent.ParseAdd("CodenameInfiniteLauncher");
+        _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ReadOnlyToken);
+    }
+
+    public record AssetInfo(string Version, string Name, string ApiUrl, long SizeBytes);
+
+    /// <summary>Returns null on any failure (no release yet, bad token, network down, no zip
+    /// asset) — a broken check should never crash the toggle, just leave it unusable with a
+    /// clear status message from the caller.</summary>
+    public async Task<AssetInfo?> GetLatestAsync()
+    {
+        try
+        {
+            var json = await _http.GetStringAsync(ReleasesApiUrl);
+            var release = JsonSerializer.Deserialize<GitHubRelease>(json);
+            if (release == null || string.IsNullOrWhiteSpace(release.TagName)) return null;
+
+            var asset = release.Assets.FirstOrDefault(a => a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
+            if (asset == null || string.IsNullOrWhiteSpace(asset.ApiUrl)) return null;
+
+            return new AssetInfo(release.TagName, asset.Name, asset.ApiUrl, asset.Size);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Downloads the release zip (the private-repo asset API, not BrowserDownloadUrl,
+    /// which a token cannot use), extracts it, and copies whatever exe it contains to
+    /// &lt;ClientPath&gt;\&lt;WipExeName&gt; — the only thing Play's launch logic looks for.
+    /// Throws on failure; the caller reports it, nothing here touches config.json.</summary>
+    public async Task DownloadAndInstallAsync(AssetInfo asset, IProgress<(int percent, string status)> progress)
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "CNIWipClient_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        var zipPath = Path.Combine(tempDir, asset.Name);
+
+        progress.Report((0, $"downloading WIP client {asset.Version}..."));
+
+        using (var req = new HttpRequestMessage(HttpMethod.Get, asset.ApiUrl))
+        {
+            req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
+            using var response = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            var total = response.Content.Headers.ContentLength ?? asset.SizeBytes;
+            long done = 0;
+
+            using var httpStream = await response.Content.ReadAsStreamAsync();
+            using var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write);
+
+            var buffer = new byte[81920];
+            int read;
+            while ((read = await httpStream.ReadAsync(buffer)) > 0)
+            {
+                await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                done += read;
+                var pct = total > 0 ? (int)Math.Clamp(done * 100 / total, 0, 100) : 0;
+                progress.Report((pct, $"downloading WIP client {asset.Version}..."));
+            }
+        }
+
+        progress.Report((100, "extracting WIP client..."));
+        var extractDir = Path.Combine(tempDir, "extracted");
+        ZipFile.ExtractToDirectory(zipPath, extractDir);
+
+        var exeSrc = Directory.EnumerateFiles(extractDir, "*.exe", SearchOption.AllDirectories).FirstOrDefault();
+        if (exeSrc == null)
+            throw new InvalidOperationException("Downloaded WIP client archive has no .exe in it — aborting, nothing was installed.");
+
+        Directory.CreateDirectory(_config.ClientPath);
+        var dest = Path.Combine(_config.ClientPath, _config.WipExeName);
+        File.Copy(exeSrc, dest, overwrite: true);
+
+        try { Directory.Delete(tempDir, true); } catch { /* best-effort cleanup */ }
+    }
+}
