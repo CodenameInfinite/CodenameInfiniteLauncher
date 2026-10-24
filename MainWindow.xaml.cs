@@ -427,6 +427,8 @@ public partial class MainWindow : Window
                 return;
             }
 
+            EnsureWipAddonsShared();
+
             // The WIP install carries no Data/ of its own — point it at the stock client's
             // existing Data folder via WOW_DATA instead of duplicating tens of GB on disk.
             // Benilla also doesn't read realmlist.wtf at all (that's reference-client behavior
@@ -451,6 +453,43 @@ public partial class MainWindow : Window
 
         Process.Start(new ProcessStartInfo(exePath) { WorkingDirectory = _config.ClientPath, UseShellExecute = true });
         Close();
+    }
+
+    /// <summary>Benilla keeps its own local state (and addon folder) beside its exe —
+    /// WipClientPath\benilla-config\AddOns — not under ClientPath's Interface\AddOns like the
+    /// stock client, so without this, anything AddonService installs is invisible to it. A
+    /// one-time NTFS junction (no admin rights needed, unlike a symlink) makes Benilla's addon
+    /// folder BE Interface\AddOns, so every future install/update/removal through the launcher's
+    /// Addons tab is picked up by both clients automatically. Left alone once created — never
+    /// re-linked or overwritten on later launches.</summary>
+    private void EnsureWipAddonsShared()
+    {
+        var benillaConfigDir = System.IO.Path.Combine(_config.WipClientPath, "benilla-config");
+        var addOnsLink = System.IO.Path.Combine(benillaConfigDir, "AddOns");
+        if (System.IO.Directory.Exists(addOnsLink))
+            return;
+
+        var addOnsTarget = System.IO.Path.Combine(_config.ClientPath, "Interface", "AddOns");
+        System.IO.Directory.CreateDirectory(addOnsTarget);
+        System.IO.Directory.CreateDirectory(benillaConfigDir);
+
+        try
+        {
+            var psi = new ProcessStartInfo("cmd.exe", $"/c mklink /J \"{addOnsLink}\" \"{addOnsTarget}\"")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            using var proc = Process.Start(psi);
+            proc?.WaitForExit(5000);
+        }
+        catch
+        {
+            // Best-effort: a failed link just means addons stay absent from the WIP client until
+            // the next Play click retries it, same as any other non-fatal launch-time step here.
+        }
     }
 
     /// <summary>Toggles which exe Play launches. Turning it on when the WIP exe isn't present
