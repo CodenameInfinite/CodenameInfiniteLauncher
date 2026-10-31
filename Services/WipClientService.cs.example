@@ -24,8 +24,8 @@ public class WipClientService
 {
     private const string ReleasesApiUrl = "https://api.github.com/repos/CodenameInfinite/CodenameInfinite-Client-benilla-everwood/releases/latest";
 
-    // Fine-grained PAT: Contents: Read-only, scoped to CodenameInfinite/benilla-everwood only.
-    private const string ReadOnlyToken = "github_pat_PLACEHOLDER"; // fill in your own fine-grained PAT (Contents: Read-only, scoped to the benilla-everwood repo)
+    // Fine-grained PAT: Contents: Read-only, scoped to CodenameInfinite/CodenameInfinite-Client-benilla-everwood only.
+    private const string ReadOnlyToken = "github_pat_PLACEHOLDER"; // fill in your own fine-grained PAT (Contents: Read-only, scoped to the CodenameInfinite-Client-benilla-everwood repo)
 
     private readonly LauncherConfig _config;
     private readonly HttpClient _http;
