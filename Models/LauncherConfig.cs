@@ -44,6 +44,9 @@ public class LauncherConfig
 
     /// <summary>Persisted so the player's choice survives a restart; PlayButton_Click reads
     /// this to pick the WIP client (WipClientPath/WipExeName + ClientPath's Data via WOW_DATA)
-    /// vs. the stock one (ClientPath/ExeName, unchanged).</summary>
-    public bool UseWipClient { get; set; } = false;
+    /// vs. the stock one (ClientPath/ExeName, unchanged). Defaults to true — benilla is the
+    /// default client now; RunStartupFlowAsync auto-checks/installs its latest release on every
+    /// launch while this is on, so players never have to touch the WIP Client toggle. It's left
+    /// in place only as a manual fallback to the stock client.</summary>
+    public bool UseWipClient { get; set; } = true;
 }

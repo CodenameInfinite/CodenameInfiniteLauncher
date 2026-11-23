@@ -107,6 +107,14 @@ public partial class MainWindow : Window
         }
 
         await CheckForUpdatesAsync();
+
+        // Benilla is the default client now — auto-check/install its latest release on every
+        // launch while UseWipClient is on, same as the stock-client manifest check above, so
+        // players are never required to touch the WIP Client toggle themselves.
+        if (_config.UseWipClient)
+        {
+            await EnsureWipClientUpToDateAsync();
+        }
     }
 
     private bool ClientIsInstalled() =>
