@@ -39,8 +39,6 @@ public partial class MainWindow : Window
             ? $"CodenameInfinite v{version.Major}.{version.Minor}.{version.Build}"
             : "CodenameInfinite";
 
-        RefreshWipClientButton();
-
         Loaded += MainWindow_Loaded;
     }
 
@@ -108,13 +106,13 @@ public partial class MainWindow : Window
 
         await CheckForUpdatesAsync();
 
-        // Benilla is the default client now — auto-check/install its latest release on every
-        // launch while UseWipClient is on, same as the stock-client manifest check above, so
-        // players are never required to touch the WIP Client toggle themselves.
-        if (_config.UseWipClient)
-        {
-            await EnsureWipClientUpToDateAsync();
-        }
+        // Benilla is the only client now (the stock exe is kept around only as the source of
+        // the Data/ folder it reads via WOW_DATA) — always check/install its latest release,
+        // same as the stock-client manifest check above. Gated behind SetReadyToLaunch so Play
+        // can't fire mid-download.
+        SetReadyToLaunch(false);
+        await EnsureWipClientUpToDateAsync();
+        SetReadyToLaunch(true);
     }
 
     private bool ClientIsInstalled() =>
@@ -426,40 +424,29 @@ public partial class MainWindow : Window
 
     private void PlayButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_config.UseWipClient)
+        // Benilla is the only client the launcher runs — the server has moved on (new races,
+        // the guild bank system) in ways the stock exe can no longer play, so there's nothing
+        // left to fall back to here.
+        var wipExePath = System.IO.Path.Combine(_config.WipClientPath, _config.WipExeName);
+        if (string.IsNullOrWhiteSpace(_config.WipClientPath) || !System.IO.File.Exists(wipExePath))
         {
-            var wipExePath = System.IO.Path.Combine(_config.WipClientPath, _config.WipExeName);
-            if (string.IsNullOrWhiteSpace(_config.WipClientPath) || !System.IO.File.Exists(wipExePath))
-            {
-                StatusText.Text = $"WIP Client is on, but it isn't installed yet — click \"WIP Client\" to download it, or turn it off to play the stock client";
-                return;
-            }
-
-            EnsureWipAddonsShared();
-
-            // The WIP install carries no Data/ of its own — point it at the stock client's
-            // existing Data folder via WOW_DATA instead of duplicating tens of GB on disk.
-            // Benilla also doesn't read realmlist.wtf at all (that's reference-client behavior
-            // it deliberately deviates from) — its realm address lives in its own config.toml,
-            // with $WOW_HOST overriding it for just this session and never touching the file.
-            // UseShellExecute must be false here: Windows ignores EnvironmentVariables changes
-            // when the process is launched through the shell.
-            var psi = new ProcessStartInfo(wipExePath) { WorkingDirectory = _config.WipClientPath, UseShellExecute = false };
-            psi.EnvironmentVariables["WOW_DATA"] = System.IO.Path.Combine(_config.ClientPath, "Data");
-            psi.EnvironmentVariables["WOW_HOST"] = _config.RealmAddress;
-            Process.Start(psi);
-            Close();
+            StatusText.Text = "client isn't installed yet — close and reopen the launcher to let it finish downloading";
             return;
         }
 
-        var exePath = System.IO.Path.Combine(_config.ClientPath, _config.ExeName);
-        if (!System.IO.File.Exists(exePath))
-        {
-            StatusText.Text = $"can't find {_config.ExeName} in {_config.ClientPath}";
-            return;
-        }
+        EnsureWipAddonsShared();
 
-        Process.Start(new ProcessStartInfo(exePath) { WorkingDirectory = _config.ClientPath, UseShellExecute = true });
+        // The install carries no Data/ of its own — point it at the stock client's existing
+        // Data folder via WOW_DATA instead of duplicating tens of GB on disk. Benilla also
+        // doesn't read realmlist.wtf at all (that's reference-client behavior it deliberately
+        // deviates from) — its realm address lives in its own config.toml, with $WOW_HOST
+        // overriding it for just this session and never touching the file.
+        // UseShellExecute must be false here: Windows ignores EnvironmentVariables changes
+        // when the process is launched through the shell.
+        var psi = new ProcessStartInfo(wipExePath) { WorkingDirectory = _config.WipClientPath, UseShellExecute = false };
+        psi.EnvironmentVariables["WOW_DATA"] = System.IO.Path.Combine(_config.ClientPath, "Data");
+        psi.EnvironmentVariables["WOW_HOST"] = _config.RealmAddress;
+        Process.Start(psi);
         Close();
     }
 
@@ -500,34 +487,18 @@ public partial class MainWindow : Window
         }
     }
 
-    /// <summary>Toggles which exe Play launches. Turning it on always checks the latest release
-    /// (cheap — one API call) and installs it first via WipClientService's authenticated
-    /// download, rather than silently flipping to a state that will fail on Play — same "tell
-    /// them, don't surprise them" instinct as the first-run overlay.</summary>
-    private async void WipClientButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!_config.UseWipClient)
-        {
-            if (!await EnsureWipClientUpToDateAsync()) return; // status already set by the helper
-        }
-
-        _config.UseWipClient = !_config.UseWipClient;
-        ConfigService.Save(_config);
-        RefreshWipClientButton();
-    }
-
-    /// <summary>Checks the private repo's latest release and installs it if WipClientPath's exe
-    /// is missing or its recorded WipInstalledVersion doesn't match — exe presence alone can't
-    /// tell a stale install from a current one, which is exactly why turning WIP Client off then
-    /// back on used to silently skip real updates. Returns false (leaving the toggle untouched)
+    /// <summary>Checks the client's latest release and installs it if WipClientPath's exe is
+    /// missing or its recorded WipInstalledVersion doesn't match — exe presence alone can't
+    /// tell a stale install from a current one. Called unconditionally from
+    /// RunStartupFlowAsync on every launch now that there's no toggle to gate it. Returns false
     /// on any failure, with StatusText explaining why.</summary>
     private async Task<bool> EnsureWipClientUpToDateAsync()
     {
-        // Refuse rather than silently create ClientPath from scratch and drop the WIP exe into
-        // an empty/placeholder folder: that "succeeds" with nothing actually playable, and looks
+        // Refuse rather than silently create ClientPath from scratch and drop the exe into an
+        // empty/placeholder folder: that "succeeds" with nothing actually playable, and looks
         // indistinguishable from the download itself failing. The stock exe already being there
-        // is the signal this IS the real client folder, not wherever config.json happened to
-        // default to.
+        // is the signal this IS the real client folder (and the source of the Data/ the client
+        // reads via WOW_DATA), not wherever config.json happened to default to.
         var stockExePath = System.IO.Path.Combine(_config.ClientPath, _config.ExeName);
         if (string.IsNullOrWhiteSpace(_config.ClientPath) || !System.IO.File.Exists(stockExePath))
         {
@@ -535,14 +506,13 @@ public partial class MainWindow : Window
             return false;
         }
 
-        WipClientButton.IsEnabled = false;
         try
         {
-            StatusText.Text = "checking for WIP client...";
+            StatusText.Text = "checking for client updates...";
             var asset = await _wipClientService.GetLatestAsync();
             if (asset == null)
             {
-                StatusText.Text = "couldn't reach the WIP client release — check your connection and try again";
+                StatusText.Text = "couldn't reach the client release — check your connection and try again";
                 return false;
             }
 
@@ -554,33 +524,22 @@ public partial class MainWindow : Window
                 && string.Equals(_config.WipInstalledVersion, asset.Version, StringComparison.OrdinalIgnoreCase);
             if (upToDate)
             {
-                StatusText.Text = $"WIP client {asset.Version} is already installed";
+                StatusText.Text = "up to date";
                 return true;
             }
 
             var progress = new Progress<(int percent, string status)>(p => StatusText.Text = $"{p.status} ({p.percent}%)");
             await _wipClientService.DownloadAndInstallAsync(asset, progress);
             _config.WipInstalledVersion = asset.Version;
-            StatusText.Text = $"WIP client {asset.Version} installed";
+            ConfigService.Save(_config);
+            StatusText.Text = $"client {asset.Version} installed";
             return true;
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"WIP client install failed: {ex.Message}";
+            StatusText.Text = $"client update failed: {ex.Message}";
             return false;
         }
-        finally
-        {
-            WipClientButton.IsEnabled = true;
-        }
-    }
-
-    private void RefreshWipClientButton()
-    {
-        WipClientButton.Content = _config.UseWipClient ? "WIP Client: On" : "WIP Client: Off";
-        WipClientButton.Foreground = _config.UseWipClient
-            ? new SolidColorBrush(Color.FromRgb(0x5D, 0xCA, 0xA5))
-            : new SolidColorBrush(Color.FromRgb(0xA8, 0xAC, 0xB5));
     }
 
     private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

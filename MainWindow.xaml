@@ -1804,22 +1804,6 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
-                <!-- Experimental WIP graphics client toggle: swaps which exe Play launches,
-                     within the same ClientPath, between the stock client and the WIP one.
-                     Off (default) until the player opts in, matching VerifyFiles/Addons' pill
-                     look so it reads as a peer feature, not a warning. -->
-                <Button x:Name="WipClientButton" Content="WIP Client: Off" Margin="6,0,0,0"
-                        Padding="8,3" Background="#8C0A0B0E" Foreground="#A8ACB5" FontSize="11"
-                        BorderThickness="0" Cursor="Hand" Click="WipClientButton_Click"
-                        ToolTip="Try the experimental graphics client (bloom, shadows, volumetric fog). Needs a benilla.exe dropped into your client folder — click to see how.">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
-                                <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}"/>
-                            </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
             </StackPanel>
 
             <!-- Patch notes panel. Both the background and the text/icons sit at 15% opacity at

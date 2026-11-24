@@ -8,6 +8,5 @@
   "wipClientPath": "",
   "wipInstalledVersion": "",
   "wipExeName": "benilla.exe",
-  "wipClientDownloadUri": "https://github.com/CodenameInfinite/CodenameInfinite-Client-benilla-everwood/releases",
-  "useWipClient": true
+  "wipClientDownloadUri": "https://github.com/CodenameInfinite/CodenameInfinite-Client-benilla-everwood/releases"
 }
