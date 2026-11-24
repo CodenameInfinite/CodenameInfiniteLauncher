@@ -111,7 +111,23 @@ public partial class MainWindow : Window
         // same as the stock-client manifest check above. Gated behind SetReadyToLaunch so Play
         // can't fire mid-download.
         SetReadyToLaunch(false);
-        await EnsureWipClientUpToDateAsync();
+        var wipOk = await EnsureWipClientUpToDateAsync();
+
+        var wipExePath = string.IsNullOrWhiteSpace(_config.WipClientPath)
+            ? null
+            : System.IO.Path.Combine(_config.WipClientPath, _config.WipExeName);
+        var wipInstalled = wipExePath != null && System.IO.File.Exists(wipExePath);
+
+        if (!wipOk && !wipInstalled)
+        {
+            // Never installed and this check just failed too (offline, GitHub unreachable,
+            // etc.) — leave Play disabled rather than letting it fail with a status message
+            // only visible after the click. A check that failed with a PRIOR install already
+            // on disk falls through to SetReadyToLaunch(true) below instead, since there's a
+            // last-known-good copy to play on.
+            return;
+        }
+
         SetReadyToLaunch(true);
     }
 
